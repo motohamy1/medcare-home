@@ -3,6 +3,8 @@
   "version": "1.0.0",
   "description": "Appwrite function to handle transactional bookings with strict concurrency control",
   "main": "src/main.js",
-  "dependencies": {},
+  "dependencies": {
+    "node-appwrite": "^25.2.0"
+  },
   "devDependencies": {}
 }

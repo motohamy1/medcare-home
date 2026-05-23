@@ -4,7 +4,7 @@ const sdk = require('node-appwrite');
  * Weekly Maintenance Cron & AI Search Intent Router (Consolidated)
  * 
  * Scheduled: Runs every Sunday at 02:00 AM (0 2 * * 0) -> Performs maintenance tasks.
- * HTTP Triggered: Acts as the AI Search Intent Router using Google Gemini 1.5 Flash.
+ * HTTP Triggered: Acts as the AI Search Intent Router using Google Gemini 2.5 Flash.
  */
 module.exports = async (context) => {
     const trigger = context.req.headers['x-appwrite-trigger'] || 'http';
@@ -38,7 +38,7 @@ module.exports = async (context) => {
 
 /**
  * AI Search Intent Router
- * Uses Google Gemini 1.5 Flash to extract medical specialties and search intent
+ * Uses Google Gemini 2.5 Flash to extract medical specialties and search intent
  * from raw user search strings (e.g., "child high fever").
  */
 async function handleAiSearchIntentRouter(context) {
@@ -85,8 +85,8 @@ async function handleAiSearchIntentRouter(context) {
     }
 
     try {
-        // 3. Construct call to Google Gemini 1.5 Flash API
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`;
+        // 3. Construct call to Google Gemini 2.5 Flash API
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`;
         
         const systemPrompt = `Extract medical intent from the user query. Classify the major field strictly into one of: "physician", "dentist", "physiotherapy". Infer the most relevant medical specialty/sub-specialty, and extract list of symptoms.
 You MUST respond with a strict, valid JSON object following this schema exactly:
@@ -116,7 +116,7 @@ Do not return any explanation or other text. Return ONLY the strict raw JSON obj
             }
         };
 
-        context.log("Sending request to Google Gemini 1.5 Flash API...");
+        context.log("Sending request to Google Gemini 2.5 Flash API...");
         const response = await fetch(url, {
             method: 'POST',
             headers: {
@@ -152,7 +152,7 @@ Do not return any explanation or other text. Return ONLY the strict raw JSON obj
         // Parse extracted intent
         let intent;
         try {
-            intent = JSON.parse(rawText);
+            intent = robustJSONParse(rawText);
         } catch (parseError) {
             context.error("Failed to parse Gemini output as JSON: " + rawText);
             return context.res.json({
@@ -298,7 +298,7 @@ async function handleWeeklyMaintenance(context) {
                         data.conditions = conditionsRes.documents.map(c => c.name);
 
                         const modelInput = { active_conditions: data.conditions, biometrics_log: data.metrics };
-                        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`;
+                        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`;
                         const systemPrompt = `You are a preventative health coach. Analyze the user's anonymized biometrics log and active conditions. Do not diagnose, prescribe, or provide diagnostic claims. Based on these raw biometrics, return exactly 3 actionable lifestyle, nutritional, or activity tips. You MUST respond with a strict, valid JSON array containing exactly 3 objects: [ { "type": "action" | "avoid", "title": "Short title of the tip", "description": "Elaborate actionable advice in simple terms." } ]`;
 
                         const response = await fetch(geminiUrl, {
@@ -314,10 +314,13 @@ async function handleWeeklyMaintenance(context) {
                         if (!response.ok) throw new Error(`Gemini responded with status ${response.status}`);
                         const resJson = await response.json();
                         const rawText = resJson.candidates[0].content.parts[0].text.trim();
-                        JSON.parse(rawText); 
+                        
+                        // Parse robustly and then format as clean serialized JSON
+                        const parsedInsights = robustJSONParse(rawText);
+                        const cleanContentJson = JSON.stringify(parsedInsights);
                         
                         const cacheDocId = `insight_${patientId}`;
-                        const cacheData = { patient_profile_id: patientId, generated_at: new Date().toISOString(), content_json: rawText };
+                        const cacheData = { patient_profile_id: patientId, generated_at: new Date().toISOString(), content_json: cleanContentJson };
                         const permissions = [sdk.Permission.read(sdk.Role.user(patientId))];
 
                         try {
@@ -344,4 +347,123 @@ async function handleWeeklyMaintenance(context) {
         return context.res.text("Weekly Maintenance Cron finished with some errors. Check logs.", 500);
     }
     return context.res.text("Weekly Maintenance Cron executed successfully.", 200);
+}
+
+/**
+ * Clean and parse JSON generated by an AI model.
+ * Handles markdown code block wrapping, raw consecutive objects, and invalid control characters.
+ */
+function robustJSONParse(rawText) {
+    if (!rawText || typeof rawText !== 'string') {
+        throw new Error("Input to JSON parser must be a non-empty string");
+    }
+
+    let cleanText = rawText.trim();
+
+    // 1. Strip Markdown Code Blocks
+    if (cleanText.startsWith("```")) {
+        cleanText = cleanText.replace(/^```(?:json)?\n?/i, "");
+        cleanText = cleanText.replace(/\n?```$/, "");
+        cleanText = cleanText.trim();
+    }
+
+    // 2. Try parsing the text as-is
+    try {
+        return JSON.parse(cleanText);
+    } catch (e) {
+        // Fall through to more advanced recovery/parsing strategies
+    }
+
+    // 3. Clean up control characters and try parsing again
+    let sanitizedText = cleanText
+        .replace(/[\u0000-\u0008\u000B-\u000C\u000E-\u001F]/g, " ")
+        .replace(/\n/g, "\\n")
+        .replace(/\r/g, "\\r")
+        .replace(/\t/g, "\\t");
+
+    try {
+        return JSON.parse(sanitizedText);
+    } catch (e) {
+        // Fall through
+    }
+
+    // 4. Recovery Strategy: Extract all JSON objects / curly-braced matches
+    const objectMatches = cleanText.match(/\{[^{}]*\}/g);
+    if (objectMatches && objectMatches.length > 0) {
+        const parsedObjects = [];
+        for (const objStr of objectMatches) {
+            try {
+                parsedObjects.push(JSON.parse(objStr));
+            } catch (err) {
+                // If a single object fails to parse, try sanitizing just that object string
+                try {
+                    const sanitizedObj = objStr
+                        .replace(/[\u0000-\u0009\u000B-\u000C\u000E-\u001F]/g, " ")
+                        .replace(/\n/g, "\\n")
+                        .replace(/\r/g, "\\r");
+                    parsedObjects.push(JSON.parse(sanitizedObj));
+                } catch (innerErr) {
+                    // Try our custom flat property parser as a last resort
+                    try {
+                        const parsedFlat = parseFlatJSONString(objStr);
+                        if (parsedFlat) {
+                            parsedObjects.push(parsedFlat);
+                        }
+                    } catch (lastResortErr) {
+                        // ignore and skip
+                    }
+                }
+            }
+        }
+        if (parsedObjects.length > 0) {
+            return parsedObjects;
+        }
+    }
+
+    // 5. If everything fails, throw the original JSON parse error
+    return JSON.parse(cleanText);
+}
+
+/**
+ * Relaxed parser for flat key-value JSON objects with potential unescaped double quotes inside values.
+ */
+function parseFlatJSONString(str) {
+    const cleanStr = str.trim().replace(/^\{/, "").replace(/\}$/, "").trim();
+    const result = {};
+    const keyRegex = /"([^"\\]*(?:\\.[^"\\]*)*)"\s*:/g;
+    let match;
+    const keys = [];
+    const keyIndices = [];
+
+    while ((match = keyRegex.exec(cleanStr)) !== null) {
+        keys.push(match[1]);
+        keyIndices.push({
+            start: match.index,
+            end: keyRegex.lastIndex,
+            key: match[1]
+        });
+    }
+
+    if (keys.length === 0) return null;
+
+    for (let i = 0; i < keyIndices.length; i++) {
+        const current = keyIndices[i];
+        const next = keyIndices[i + 1];
+        
+        let valueStr = next 
+            ? cleanStr.substring(current.end, next.start).trim()
+            : cleanStr.substring(current.end).trim();
+        
+        if (valueStr.endsWith(",")) {
+            valueStr = valueStr.substring(0, valueStr.length - 1).trim();
+        }
+        
+        if (valueStr.startsWith('"') && valueStr.endsWith('"')) {
+            valueStr = valueStr.substring(1, valueStr.length - 1);
+        }
+        
+        result[current.key] = valueStr;
+    }
+
+    return result;
 }

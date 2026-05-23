@@ -47,8 +47,8 @@ module.exports = async (context) => {
     }
 
     try {
-        // 3. Construct call to Google Gemini 1.5 Flash API
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`;
+        // 3. Construct call to Google Gemini 2.5 Flash API
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`;
         
         const systemPrompt = `Extract medical intent from the user query. Classify the major field strictly into one of: "physician", "dentist", "physiotherapy". Infer the most relevant medical specialty/sub-specialty, and extract list of symptoms.
 You MUST respond with a strict, valid JSON object following this schema exactly:
@@ -78,7 +78,7 @@ Do not return any explanation or other text. Return ONLY the strict raw JSON obj
             }
         };
 
-        context.log("Sending request to Google Gemini 1.5 Flash API...");
+        context.log("Sending request to Google Gemini 2.5 Flash API...");
         const response = await fetch(url, {
             method: 'POST',
             headers: {
