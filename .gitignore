@@ -1,0 +1,16 @@
+# Dependencies
+node_modules/
+functions/*/node_modules/
+
+# Environment variables
+.env
+
+# IDE / OS
+.DS_Store
+*.log
+
+# Local planning directories (if not meant for repo)
+.planning/
+
+# Appwrite local artifacts
+.appwrite/

@@ -46,7 +46,7 @@ async function run() {
         console.log(`📡 Sending Query: "${sq.text}" (${sq.name})...`);
         try {
             const execution = await functions.createExecution(
-                'weekly-maintenance-cron',
+                'ai-health-coach-cron',
                 JSON.stringify({ query: sq.text }),
                 false, // async
                 '/',   // path

@@ -173,7 +173,7 @@ Do not return any explanation or other text. Return ONLY the strict raw JSON obj
         }, 200);
 
     } catch (err) {
-        context.error("Unexpected error in ai-search-intent-router logic: " + err.stack);
+        context.error("Unexpected error in AI Search Intent Router logic: " + err.stack);
         return context.res.json({
             success: false,
             error: "Internal Server Error: " + err.message
