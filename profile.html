@@ -1,0 +1,259 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>MedCareHome - Profile</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;900&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "error-container": "#ffdad6",
+                        "outline": "#747a60",
+                        "on-surface": "#1b1b1b",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-fixed": "#161e00",
+                        "secondary-container": "#fe00fe",
+                        "primary-fixed-dim": "#abd600",
+                        "surface-tint": "#506600",
+                        "error": "#ba1a1a",
+                        "primary": "#506600",
+                        "inverse-on-surface": "#f1f1f1",
+                        "on-secondary-fixed": "#380038",
+                        "surface-container": "#eeeeee",
+                        "secondary-fixed": "#ffd7f5",
+                        "on-tertiary-container": "#007777",
+                        "on-primary-fixed-variant": "#3c4d00",
+                        "primary-fixed": "#c3f400",
+                        "on-surface-variant": "#444933",
+                        "on-secondary-container": "#500050",
+                        "primary-container": "#ccff00",
+                        "on-secondary": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "secondary-fixed-dim": "#ffabf3",
+                        "surface-bright": "#f9f9f9",
+                        "inverse-primary": "#abd600",
+                        "surface-container-highest": "#e2e2e2",
+                        "on-secondary-fixed-variant": "#810081",
+                        "tertiary": "#006a6a",
+                        "surface-container-low": "#f3f3f3",
+                        "tertiary-fixed-dim": "#00dddd",
+                        "surface-dim": "#dadada",
+                        "surface": "#f9f9f9",
+                        "on-tertiary-fixed-variant": "#004f4f",
+                        "on-error": "#ffffff",
+                        "background": "#f9f9f9",
+                        "outline-variant": "#c4c9ac",
+                        "tertiary-container": "#8dfffe",
+                        "surface-container-high": "#e8e8e8",
+                        "inverse-surface": "#303030",
+                        "surface-variant": "#e2e2e2",
+                        "secondary": "#a900a9",
+                        "on-background": "#1b1b1b",
+                        "on-primary-container": "#5b7300",
+                        "tertiary-fixed": "#00fbfb",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-fixed": "#002020"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "16px",
+                        "container-gap": "20px",
+                        "margin-mobile": "16px",
+                        "margin-desktop": "32px",
+                        "unit": "4px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "label-sm": ["Space Grotesk"],
+                        "headline-lg-mobile": ["Space Grotesk"],
+                        "display-lg": ["Space Grotesk"],
+                        "headline-lg": ["Space Grotesk"],
+                        "headline-md": ["Space Grotesk"],
+                        "body-md": ["Inter"],
+                        "label-md": ["Space Grotesk"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "1.2", "fontWeight": "700" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-lg": ["32px", { "lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "label-md": ["14px", { "lineHeight": "1.2", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        /* Neo-Brutalism Utilities */
+        .brutal-border { border: 3px solid #1b1b1b; }
+        .brutal-shadow { box-shadow: 4px 4px 0px 0px rgba(27,27,27,1); }
+        .brutal-shadow-lg { box-shadow: 8px 8px 0px 0px rgba(27,27,27,1); }
+        .brutal-btn-active:active { transform: translate(4px, 4px); box-shadow: 0px 0px 0px 0px rgba(27,27,27,1); }
+        
+        /* Grid pattern background */
+        .bg-grid-pattern {
+            background-image: radial-gradient(#1b1b1b 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-lg min-h-screen flex flex-col antialiased selection:bg-secondary-container selection:text-on-secondary">
+<!-- TopAppBar Shared Component -->
+<header class="bg-background border-b-4 border-on-surface bg-surface flex justify-between items-center w-full px-margin-mobile py-3 sticky top-0 z-50 shadow-[0px_4px_0px_0px_rgba(0,0,0,1)]">
+<button class="text-on-surface hover:bg-primary-container transition-transform active:translate-y-1 active:shadow-none w-10 h-10 flex items-center justify-center rounded-full brutal-border brutal-shadow bg-surface-container-lowest brutal-btn-active">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">menu</span>
+</button>
+<div class="flex-1 flex justify-center px-2">
+<div class="font-display-lg text-[22px] md:text-[28px] leading-none font-black text-on-surface border-2 border-on-surface bg-primary-container px-3 py-1.5 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] uppercase tracking-tighter whitespace-nowrap">
+MEDCAREHOME
+</div>
+</div>
+<button class="w-10 h-10 rounded-full overflow-hidden brutal-border brutal-shadow bg-surface-container hover:bg-primary-container transition-transform active:translate-y-1 active:shadow-none brutal-btn-active">
+<img alt="User Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBG3csrKpo-lMOYmLSF_z8TCrJV9VJO0LWL3PgZH87-u5Nx7jEtGrgmd7YGCkNjdBAfqYSIrDWW04ksV7RHCytdRBjyDWUgbohGrywirYdpHOOHA7AItkGiqTGL95LYOC37kd_qi8mDxVFSyMTgq_dAUal9C4CzdxeGxuLEoxZstdHPWs8PEzMU7VT9TvHEBN-IepocJPqgOxr8ONLxAvoaJ6HN9RfVg0cPbffXjtfUnC9d1WjlAqfEa_SX677LIRPGbJpVGdQsGQ">
+</button>
+</header>
+<!-- Main Canvas -->
+<main class="flex-1 pb-32 flex flex-col gap-container-gap bg-grid-pattern relative">
+<div class="absolute inset-0 bg-background/80 z-0 pointer-events-none"></div>
+<!-- Profile Header -->
+<section class="relative z-10 flex flex-col items-center pt-8 px-margin-mobile text-center gap-4">
+<div class="relative group">
+<div class="w-32 h-32 rounded-full overflow-hidden brutal-border brutal-shadow-lg bg-primary-container relative z-10 transition-transform group-active:translate-y-2 group-active:translate-x-2 group-active:shadow-none">
+<img alt="Large User Avatar" class="w-full h-full object-cover" data-alt="A striking, high-fashion portrait of a young woman with a bold, futuristic look. The image is brightly lit with a pop-art feel, featuring stark contrasts and vivid colors. She is set against an abstract, geometric background that echoes early 2000s cyber-culture and modern brutalist web design." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCM5vouybNJb08rfz37C-vRjKJTbm5Y5tFGRK0Jl94IunI8qFeKPRxWsomb-TpKIJxaxwcIcV5ywYBVgIQ2lDbpS8z-ofVDBvqVpjS1AOjzjgmPJn6tLZ7Qi8nvFu3hf45AMqGJGSFxs00oLvUSxPi6RA_gI-fmv-oMvuklVCsnFCmASrNyXXq5nREW7TDTr-TBiS2d7e9UOY3SaWTFjigy2AHd0bQ3VQBjyShWfdv68ln_pBeBpRKLnskBwllChKNf8-pyeCg5Wg">
+</div>
+<!-- Decorative element -->
+<div class="absolute -bottom-2 -right-2 bg-secondary-container text-on-secondary w-10 h-10 rounded-full brutal-border flex items-center justify-center z-20 brutal-shadow rotate-12">
+<span class="material-symbols-outlined text-xl" style="font-variation-settings: &quot;FILL&quot; 1;">verified</span>
+</div>
+</div>
+<div class="flex flex-col items-center gap-1">
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface uppercase tracking-tight bg-primary-container px-3 py-1 brutal-border brutal-shadow-lg inline-block transform -rotate-1">
+                    Alex Mercer
+                </h1>
+<p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-widest mt-2 bg-surface-container-highest px-2 py-1 brutal-border">
+                    ID: VTP-8992X
+                </p>
+</div>
+</section>
+<!-- Bento Summary Cards -->
+<section class="relative z-10 px-margin-mobile grid grid-cols-2 gap-4 mt-4">
+<!-- Health Score (Spans 2 cols) -->
+<div class="col-span-2 bg-primary-container brutal-border brutal-shadow rounded-xl p-5 flex items-center justify-between relative overflow-hidden group">
+<div class="absolute -right-10 -bottom-10 opacity-20 pointer-events-none">
+<span class="material-symbols-outlined text-[150px]" style="font-variation-settings: &quot;FILL&quot; 1;">favorite</span>
+</div>
+<div class="flex flex-col relative z-10">
+<span class="font-label-sm text-label-sm text-on-primary-container uppercase tracking-widest mb-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">health_and_safety</span>
+                        Health Score
+                    </span>
+<span class="font-display-lg text-display-lg text-on-surface">98<span class="font-headline-md text-headline-md">/100</span></span>
+</div>
+<div class="w-16 h-16 rounded-full border-4 border-on-surface flex items-center justify-center bg-surface text-on-surface rotate-12 brutal-shadow group-hover:rotate-0 transition-transform">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: &quot;FILL&quot; 1;">arrow_upward</span>
+</div>
+</div>
+<!-- Total Appointments -->
+<div class="bg-surface-container-lowest brutal-border brutal-shadow rounded-xl p-4 flex flex-col justify-between aspect-square">
+<div class="flex justify-between items-start">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Visits</span>
+<span class="material-symbols-outlined text-secondary-container" style="font-variation-settings: &quot;FILL&quot; 1;">calendar_month</span>
+</div>
+<div class="mt-auto">
+<span class="font-headline-lg-mobile text-headline-lg-mobile block">14</span>
+<span class="font-body-md text-body-md text-on-surface-variant text-sm block leading-tight mt-1">Total Booked</span>
+</div>
+</div>
+<!-- Membership Level -->
+<div class="bg-secondary-container text-on-secondary brutal-border brutal-shadow rounded-xl p-4 flex flex-col justify-between aspect-square relative overflow-hidden">
+<div class="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white to-transparent"></div>
+<div class="flex justify-between items-start relative z-10">
+<span class="font-label-sm text-label-sm uppercase">Status</span>
+<span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">star</span>
+</div>
+<div class="mt-auto relative z-10">
+<span class="font-headline-lg-mobile text-headline-lg-mobile block uppercase tracking-tighter">Pro</span>
+<span class="font-body-md text-body-md text-on-secondary/80 text-sm block leading-tight mt-1">Active until Nov</span>
+</div>
+</div>
+</section>
+<!-- Actions & Activity -->
+<section class="relative z-10 px-margin-mobile flex flex-col gap-4 mt-2">
+<h2 class="font-headline-md text-headline-md text-on-surface uppercase border-b-4 border-on-surface pb-2 w-max inline-block pr-8">
+                Actions
+            </h2>
+<!-- Action List -->
+<div class="flex flex-col gap-3">
+<button class="w-full bg-surface-container-lowest brutal-border brutal-shadow p-4 flex items-center justify-between text-left brutal-btn-active group">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-primary text-on-primary rounded-full flex items-center justify-center brutal-border group-active:scale-95 transition-transform">
+<span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">history</span>
+</div>
+<div>
+<span class="font-label-md text-label-md block uppercase">Recent Activity</span>
+<span class="font-body-md text-body-md text-sm text-on-surface-variant">View past records</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+<button class="w-full bg-surface-container-lowest brutal-border brutal-shadow p-4 flex items-center justify-between text-left brutal-btn-active group">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-surface-variant text-on-surface rounded-full flex items-center justify-center brutal-border group-active:scale-95 transition-transform">
+<span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">settings</span>
+</div>
+<div>
+<span class="font-label-md text-label-md block uppercase">Settings</span>
+<span class="font-body-md text-body-md text-sm text-on-surface-variant">Preferences &amp; Privacy</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+<button class="w-full bg-inverse-surface text-on-primary brutal-border brutal-shadow p-4 flex items-center justify-center gap-2 brutal-btn-active mt-2">
+<span class="font-label-md text-label-md uppercase tracking-wider">Log Out</span>
+<span class="material-symbols-outlined text-[18px]">logout</span>
+</button>
+</div>
+</section>
+</main>
+<!-- BottomNavBar Shared Component -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center bg-surface px-4 py-3 pb-safe border-t-4 border-on-surface shadow-[0px_-4px_0px_0px_rgba(0,0,0,1)]">
+<!-- Tab 1: HOME (Inactive) -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-all scale-95 active:scale-90 w-20">
+<span class="material-symbols-outlined text-2xl mb-1">search</span>
+<span class="font-label-sm text-label-sm uppercase">HOME</span>
+</button>
+<!-- Tab 2: VITAL (Inactive) -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-all scale-95 active:scale-90 w-20">
+<span class="material-symbols-outlined text-2xl mb-1">monitoring</span>
+<span class="font-label-sm text-label-sm uppercase">VITAL</span>
+</button>
+<!-- Tab 3: ME (Active) -->
+<button class="flex flex-col items-center justify-center bg-primary text-on-primary border-2 border-on-surface shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] px-4 py-1 scale-95 active:scale-90 transition-transform w-20">
+<span class="material-symbols-outlined text-2xl mb-1" style="font-variation-settings: &quot;FILL&quot; 1;">person</span>
+<span class="font-label-sm text-label-sm uppercase">ME</span>
+</button>
+</nav>
+
+
+
+
+</body></html>
