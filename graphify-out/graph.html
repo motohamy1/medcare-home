@@ -1,0 +1,1774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>medcare-home — Complete Call Flow &amp; Architecture Documentation</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+:root {
+  --bg: #0f172a; --surface: #1e293b; --border: #334155;
+  --text: #e2e8f0; --muted: #94a3b8; --accent: #38bdf8;
+  --warn: #fbbf24; --err: #f87171; --ok: #34d399;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; }
+.container { max-width: 1200px; margin: 0 auto; padding: 40px 24px; }
+h1 { font-size: 2.4rem; margin-bottom: 8px; background: linear-gradient(135deg, var(--accent), #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+h2 { font-size: 1.7rem; margin: 48px 0 16px; padding-bottom: 8px; border-bottom: 2px solid var(--accent); }
+h3 { font-size: 1.25rem; margin: 32px 0 12px; color: var(--accent); }
+h4 { font-size: 1.05rem; margin: 20px 0 8px; color: var(--warn); }
+p { margin: 8px 0; color: var(--muted); }
+.subtitle { color: var(--muted); font-size: 1.1rem; margin-bottom: 32px; }
+.mermaid { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin: 20px 0; overflow-x: auto; position: relative; }
+.mermaid.is-enhanced { padding: 0; overflow: hidden; min-height: 260px; }
+.mermaid-viewport { padding: 54px 24px 24px; overflow: hidden; cursor: grab; touch-action: none; min-height: 260px; }
+.mermaid-viewport.is-dragging { cursor: grabbing; }
+.mermaid-viewport svg { max-width: none !important; height: auto; transform-origin: 0 0; transition: transform 120ms ease; }
+.mermaid-toolbar { position: absolute; top: 10px; right: 10px; z-index: 3; display: flex; align-items: center; gap: 6px; padding: 6px; background: rgba(15,23,42,0.92); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.28); }
+.mermaid-toolbar button, .mermaid-toolbar .zoom-level { height: 28px; min-width: 32px; border: 1px solid var(--border); border-radius: 6px; background: #1e293b; color: var(--text); font: 600 0.78rem system-ui, sans-serif; display: inline-flex; align-items: center; justify-content: center; }
+.mermaid-toolbar button { cursor: pointer; }
+.mermaid-toolbar button:hover { border-color: var(--accent); color: var(--accent); }
+.mermaid-toolbar .zoom-level { min-width: 52px; color: var(--muted); background: transparent; }
+.call-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.92rem; }
+.call-table th { background: #1a2744; color: var(--accent); text-align: left; padding: 10px 14px; border: 1px solid var(--border); }
+.call-table td { padding: 8px 14px; border: 1px solid var(--border); vertical-align: top; }
+.call-table tr:nth-child(even) { background: rgba(255,255,255,0.02); }
+.tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; }
+.tag-async { background: #7c3aed33; color: #a78bfa; }
+.tag-class { background: #05966933; color: var(--ok); }
+.tag-func { background: #2563eb33; color: var(--accent); }
+.tag-cmd { background: #d9770633; color: var(--warn); }
+.tag-endpoint { background: #dc262633; color: var(--err); }
+.tag-hook { background: #db277733; color: #f472b6; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin: 16px 0; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 16px; margin: 16px 0; }
+.arrow-chain { font-family: 'Fira Code', monospace; font-size: 0.85rem; color: var(--accent); padding: 10px; background: rgba(56,189,248,0.06); border-radius: 6px; }
+code { font-family: 'Fira Code', 'Cascadia Code', monospace; background: rgba(255,255,255,0.06); padding: 1px 6px; border-radius: 3px; font-size: 0.88em; }
+ul, ol { margin: 8px 0 8px 24px; color: var(--muted); }
+li { margin: 4px 0; }
+a { color: var(--accent); }
+hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+.nav { position: sticky; top: 0; background: var(--bg); z-index: 10; padding: 12px 0; border-bottom: 1px solid var(--border); display: flex; gap: 20px; flex-wrap: wrap; font-size: 0.9rem; }
+.nav a { text-decoration: none; }
+.nav a:hover { text-decoration: underline; }
+@media (max-width: 768px) { .container { padding: 16px; } h1 { font-size: 1.8rem; } }
+
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>medcare-home — Complete Call Flow &amp; Architecture Documentation</h1>
+<p class="subtitle">Generated from graphify knowledge graph: 125 nodes, 128 edges, 15 communities. Commit: ea2d25c</p>
+
+<div class="nav">
+    <a href="#overview">Architecture Overview</a>
+    <a href="#build-graph">Graph Build</a>
+    <a href="#cli-skills">CLI &amp; Skill Installers</a>
+    <a href="#serve-api">Serving API</a>
+    <a href="#security-global">Security &amp; Global Graph</a>
+    <a href="#tests-fixtures">Tests &amp; Fixtures</a>
+    <a href="#messaging-setup-script">Messaging Setup Script</a>
+    <a href="#database-seed-script">Database Seed Script</a>
+    <a href="#database-setup-script">Database Setup Script</a>
+    <a href="#auth-rbac-setup-script">Auth RBAC Setup Script</a>
+</div>
+
+<!-- ====== Architecture Overview ====== -->
+<h2 id="overview">1. Architecture Overview</h2>
+
+<div class="mermaid">
+
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    BUILD_GRAPH_321CBB04("Graph Build<br/><small>44 nodes</small>")
+    class BUILD_GRAPH_321CBB04 module;
+    CLI_SKILLS_9964CBB8("CLI &amp; Skill Installers<br/><small>47 nodes</small>")
+    class CLI_SKILLS_9964CBB8 module;
+    SERVE_API_35EC8E86("Serving API<br/><small>3 nodes</small>")
+    class SERVE_API_35EC8E86 module;
+    SECURITY_GLOBAL_5B9C6A04("Security &amp; Global Graph<br/><small>12 nodes</small>")
+    class SECURITY_GLOBAL_5B9C6A04 module;
+    TESTS_FIXTURES_B84B1DCC("Tests &amp; Fixtures<br/><small>3 nodes</small>")
+    class TESTS_FIXTURES_B84B1DCC module;
+    MESSAGING_SETUP_SCRIPT_2AD8628D("Messaging Setup Script<br/><small>5 nodes</small>")
+    class MESSAGING_SETUP_SCRIPT_2AD8628D module;
+    DATABASE_SEED_SCRIPT_07B09309("Database Seed Script<br/><small>5 nodes</small>")
+    class DATABASE_SEED_SCRIPT_07B09309 module;
+    DATABASE_SETUP_SCRIPT_A0AB00D2("Database Setup Script<br/><small>3 nodes</small>")
+    class DATABASE_SETUP_SCRIPT_A0AB00D2 module;
+    AUTH_RBAC_SETUP_SCRIPT_B8FC852E("Auth RBAC Setup Script<br/><small>3 nodes</small>")
+    class AUTH_RBAC_SETUP_SCRIPT_B8FC852E module;
+    CLI_SKILLS_9964CBB8 -->|has component| SECURITY_GLOBAL_5B9C6A04
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<div class="grid">
+  <div class="card">
+    <h4>Architecture Layers</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>Layer</th><th>Nodes</th><th>Communities</th></tr>
+      <tr><td>Graph Build</td><td>44</td><td><code>1, 3, 5, 8</code></td></tr><tr><td>CLI &amp; Skill Installers</td><td>47</td><td><code>0, 2, 6, 7</code></td></tr><tr><td>Serving API</td><td>3</td><td><code>14</code></td></tr><tr><td>Security &amp; Global Graph</td><td>12</td><td><code>4</code></td></tr><tr><td>Tests &amp; Fixtures</td><td>3</td><td><code>13</code></td></tr><tr><td>Messaging Setup Script</td><td>5</td><td><code>10</code></td></tr><tr><td>Database Seed Script</td><td>5</td><td><code>9</code></td></tr><tr><td>Database Setup Script</td><td>3</td><td><code>11</code></td></tr><tr><td>Auth RBAC Setup Script</td><td>3</td><td><code>12</code></td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Core Flow</h4>
+    <div class="arrow-chain">Graph Build -&gt; CLI &amp; Skill Installers -&gt; Security &amp; Global Graph -&gt; Serving API -&gt; Tests &amp; Fixtures -&gt; Messaging Setup Script -&gt; Database Seed Script</div>
+  </div>
+</div>
+<div class="grid">
+  <div class="card">
+    <h4>Graph Report Highlights</h4>
+    <ul>
+      <li>125 nodes · 128 edges · 15 communities (11 shown, 4 thin omitted)</li>
+      <li>Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 2 edges (avg confidence: 0.9)</li>
+      <li>Token cost: 0 input · 0 output</li>
+      <li>1. `Medical Care Hub &amp; Personal Health Monitor` - 17 edges</li>
+      <li>2. `Medical_Hub_Prod Database` - 10 edges</li>
+      <li>3. `scripts` - 7 edges</li>
+    </ul>
+  </div>
+</div>
+<hr>
+<!-- ====== 2. Graph Build ====== -->
+<h2 id="build-graph">2. Graph Build</h2>
+<p>Graph Build groups implementation around packagejson, functions, weekly, maintenance, mostly in package.json, functions/weekly-maintenance-cron/package.json, functions/transactional-booking-engine/package.json. This section covers 44 nodes and 40 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: Graph Build (44 nodes, 40 edges)
+    subgraph build_graph_package_json_4e40bfbd["package.json"]
+        package_json_ae96f451("package.json")
+        medcare_home_package_scripts_59c281a8("scripts<br/><small>package.json</small>")
+        medcare_home_package_dependencies_4ab93060("dependencies<br/><small>package.json</small>")
+        medcare_home_package_name_d2fffe99("name<br/><small>package.json</small>")
+        medcare_home_package_version_b29d11cf("version<br/><small>package.json</small>")
+        medcare_home_package_description_16b2921e("description<br/><small>package.json</small>")
+        medcare_home_package_main_8d33adf3("main<br/><small>package.json</small>")
+        medcare_home_package_keywords_78fcaec2("keywords<br/><small>package.json</small>")
+        medcare_home_package_author_0149f8e0("author<br/><small>package.json</small>")
+        medcare_home_package_license_f48a068d("license<br/><small>package.json</small>")
+        medcare_home_package_scripts_setup_38eb7f54("setup<br/><small>package.json</small>")
+        medcare_home_package_scripts_setup_auth_5fc9a35f("setup:auth<br/><small>package.json</small>")
+        medcare_home_package_scripts_setup_messaging_02243af6("setup:messaging<br/><small>package.json</small>")
+        medcare_home_package_scripts_seed_660f7759("seed<br/><small>package.json</small>")
+        medcare_home_package_scripts_test_backend_022823c4("test:backend<br/><small>package.json</small>")
+    end
+    subgraph build_graph_appwrite_json_844d215d["appwrite.json"]
+        appwrite_json_239cd4ca("appwrite.json")
+        medcare_home_appwrite_projectid_2f8fc153("projectId<br/><small>appwrite.json</small>")
+        medcare_home_appwrite_projectname_0a9f8d00("projectName<br/><small>appwrite.json</small>")
+        medcare_home_appwrite_endpoint_75fbcfcf("endpoint<br/><small>appwrite.json</small>")
+        medcare_home_appwrite_functions_ea750d6c("functions<br/><small>appwrite.json</small>")
+    end
+    subgraph build_graph_functions_transactional_booking_engi_68944eae["functions/transactional-booking-engine/package.json"]
+        functions_transactional_booking_engine_package_j_3effa876("package.json")
+        transactional_booking_engine_package_dependencie_d48c89c2("dependencies<br/><small>functions/transactional-booking-engine/package.json</small>")
+    end
+    subgraph build_graph_functions_weekly_maintenance_cron_pa_41768727["functions/weekly-maintenance-cron/package.json"]
+        functions_weekly_maintenance_cron_package_json_c8dcae60("package.json")
+        weekly_maintenance_cron_package_dependencies_48cd4563("dependencies<br/><small>functions/weekly-maintenance-cron/package.json</small>")
+    end
+    appwrite_json_239cd4ca -->|contains| medcare_home_appwrite_projectid_2f8fc153
+    appwrite_json_239cd4ca -->|contains| medcare_home_appwrite_projectname_0a9f8d00
+    appwrite_json_239cd4ca -->|contains| medcare_home_appwrite_endpoint_75fbcfcf
+    appwrite_json_239cd4ca -->|contains| medcare_home_appwrite_functions_ea750d6c
+    package_json_ae96f451 -->|contains| medcare_home_package_name_d2fffe99
+    package_json_ae96f451 -->|contains| medcare_home_package_version_b29d11cf
+    package_json_ae96f451 -->|contains| medcare_home_package_description_16b2921e
+    package_json_ae96f451 -->|contains| medcare_home_package_main_8d33adf3
+    package_json_ae96f451 -->|contains| medcare_home_package_scripts_59c281a8
+    package_json_ae96f451 -->|contains| medcare_home_package_dependencies_4ab93060
+    package_json_ae96f451 -->|contains| medcare_home_package_keywords_78fcaec2
+    package_json_ae96f451 -->|contains| medcare_home_package_author_0149f8e0
+    package_json_ae96f451 -->|contains| medcare_home_package_license_f48a068d
+    medcare_home_package_scripts_59c281a8 -->|contains| medcare_home_package_scripts_setup_38eb7f54
+    medcare_home_package_scripts_59c281a8 -->|contains| medcare_home_package_scripts_setup_auth_5fc9a35f
+    medcare_home_package_scripts_59c281a8 -->|contains| medcare_home_package_scripts_setup_messaging_02243af6
+    medcare_home_package_scripts_59c281a8 -->|contains| medcare_home_package_scripts_seed_660f7759
+    medcare_home_package_scripts_59c281a8 -->|contains| medcare_home_package_scripts_test_backend_022823c4
+    functions_weekly_maintenance_cron_package_json_c8dcae60 -->|contains| weekly_maintenance_cron_package_dependencies_48cd4563
+    functions_transactional_booking_engine_package_j_3effa876 -->|contains| transactional_booking_engine_package_dependencie_d48c89c2
+    %% Omitted for readability: 20 nodes, 0 edges
+    class package_json_ae96f451 function;
+    class medcare_home_package_scripts_59c281a8 function;
+    class medcare_home_package_dependencies_4ab93060 function;
+    class medcare_home_package_name_d2fffe99 function;
+    class medcare_home_package_version_b29d11cf function;
+    class medcare_home_package_description_16b2921e function;
+    class medcare_home_package_main_8d33adf3 function;
+    class medcare_home_package_keywords_78fcaec2 function;
+    class medcare_home_package_author_0149f8e0 function;
+    class medcare_home_package_license_f48a068d function;
+    class medcare_home_package_scripts_setup_38eb7f54 function;
+    class medcare_home_package_scripts_setup_auth_5fc9a35f function;
+    class medcare_home_package_scripts_setup_messaging_02243af6 function;
+    class medcare_home_package_scripts_seed_660f7759 function;
+    class medcare_home_package_scripts_test_backend_022823c4 function;
+    class appwrite_json_239cd4ca function;
+    class medcare_home_appwrite_projectid_2f8fc153 function;
+    class medcare_home_appwrite_projectname_0a9f8d00 function;
+    class medcare_home_appwrite_endpoint_75fbcfcf api;
+    class medcare_home_appwrite_functions_ea750d6c function;
+    class functions_transactional_booking_engine_package_j_3effa876 function;
+    class transactional_booking_engine_package_dependencie_d48c89c2 function;
+    class functions_weekly_maintenance_cron_package_json_c8dcae60 function;
+    class weekly_maintenance_cron_package_dependencies_48cd4563 function;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>package.json</code><br><small style="color:var(--muted)">package.json</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>package.json node in package.json.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><code>name</code><br><small style="color:var(--muted)">package.json</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>name node in package.json.</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td><code>version</code><br><small style="color:var(--muted)">package.json</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>version node in package.json.</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td><code>description</code><br><small style="color:var(--muted)">package.json</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>description node in package.json.</td>
+</tr>
+<tr>
+  <td>5</td>
+  <td><code>main</code><br><small style="color:var(--muted)">package.json</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>main node in package.json.</td>
+</tr>
+<tr>
+  <td>6</td>
+  <td><code>scripts</code><br><small style="color:var(--muted)">package.json</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>scripts node in package.json.</td>
+</tr>
+<tr>
+  <td>7</td>
+  <td><code>setup</code><br><small style="color:var(--muted)">package.json</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>setup node in package.json.</td>
+</tr>
+<tr>
+  <td>8</td>
+  <td><code>setup:auth</code><br><small style="color:var(--muted)">package.json</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>setup:auth node in package.json.</td>
+</tr>
+<tr>
+  <td>9</td>
+  <td><code>setup:messaging</code><br><small style="color:var(--muted)">package.json</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>setup:messaging node in package.json.</td>
+</tr>
+<tr>
+  <td>10</td>
+  <td><code>seed</code><br><small style="color:var(--muted)">package.json</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>seed node in package.json.</td>
+</tr>
+<tr>
+  <td>11</td>
+  <td><code>test:backend</code><br><small style="color:var(--muted)">package.json</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Verifies imports, entry points, or version behavior.</td>
+</tr>
+<tr>
+  <td>12</td>
+  <td><code>test:search</code><br><small style="color:var(--muted)">package.json</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Verifies imports, entry points, or version behavior.</td>
+</tr>
+<tr>
+  <td>13</td>
+  <td><code>dependencies</code><br><small style="color:var(--muted)">package.json</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>dependencies node in package.json.</td>
+</tr>
+<tr>
+  <td>14</td>
+  <td><code>dotenv</code><br><small style="color:var(--muted)">package.json</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>dotenv node in package.json.</td>
+</tr>
+<tr>
+  <td>15</td>
+  <td><code>node-appwrite</code><br><small style="color:var(--muted)">package.json</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>node-appwrite node in package.json.</td>
+</tr>
+<tr>
+  <td>16</td>
+  <td><code>keywords</code><br><small style="color:var(--muted)">package.json</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>keywords node in package.json.</td>
+</tr>
+<tr>
+  <td>17</td>
+  <td><code>author</code><br><small style="color:var(--muted)">package.json</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>author node in package.json.</td>
+</tr>
+<tr>
+  <td>18</td>
+  <td><code>license</code><br><small style="color:var(--muted)">package.json</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>license node in package.json.</td>
+</tr>
+<tr>
+  <td>19</td>
+  <td><code>package.json</code><br><small style="color:var(--muted)">functions/weekly-maintenance-cron/package.json</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>package.json node in functions/weekly-maintenance-cron/package.json.</td>
+</tr>
+<tr>
+  <td>20</td>
+  <td><code>name</code><br><small style="color:var(--muted)">functions/weekly-maintenance-cron/package.json</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>name node in functions/weekly-maintenance-cron/package.json.</td>
+</tr>
+<tr>
+  <td>21</td>
+  <td><code>version</code><br><small style="color:var(--muted)">functions/weekly-maintenance-cron/package.json</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>version node in functions/weekly-maintenance-cron/package.json.</td>
+</tr>
+<tr>
+  <td>22</td>
+  <td><code>description</code><br><small style="color:var(--muted)">functions/weekly-maintenance-cron/package.json</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>description node in functions/weekly-maintenance-cron/package.json.</td>
+</tr>
+<tr>
+  <td>23</td>
+  <td><code>main</code><br><small style="color:var(--muted)">functions/weekly-maintenance-cron/package.json</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>main node in functions/weekly-maintenance-cron/package.json.</td>
+</tr>
+<tr>
+  <td>24</td>
+  <td><code>scripts</code><br><small style="color:var(--muted)">functions/weekly-maintenance-cron/package.json</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>scripts node in functions/weekly-maintenance-cron/package.json.</td>
+</tr>
+<tr>
+  <td>25</td>
+  <td><code>test</code><br><small style="color:var(--muted)">functions/weekly-maintenance-cron/package.json</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Verifies imports, entry points, or version behavior.</td>
+</tr>
+<tr>
+  <td>26</td>
+  <td><code>keywords</code><br><small style="color:var(--muted)">functions/weekly-maintenance-cron/package.json</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>keywords node in functions/weekly-maintenance-cron/package.json.</td>
+</tr>
+<tr>
+  <td>27</td>
+  <td><code>author</code><br><small style="color:var(--muted)">functions/weekly-maintenance-cron/package.json</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>author node in functions/weekly-maintenance-cron/package.json.</td>
+</tr>
+<tr>
+  <td>28</td>
+  <td><code>license</code><br><small style="color:var(--muted)">functions/weekly-maintenance-cron/package.json</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>license node in functions/weekly-maintenance-cron/package.json.</td>
+</tr>
+<tr>
+  <td>29</td>
+  <td><code>type</code><br><small style="color:var(--muted)">functions/weekly-maintenance-cron/package.json</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>type node in functions/weekly-maintenance-cron/package.json.</td>
+</tr>
+<tr>
+  <td>30</td>
+  <td><code>dependencies</code><br><small style="color:var(--muted)">functions/weekly-maintenance-cron/package.json</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>dependencies node in functions/weekly-maintenance-cron/package.json.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>package.json</code></td><td>18 nodes</td></tr>
+<tr><td><code>functions/weekly-maintenance-cron/package.json</code></td><td>13 nodes</td></tr>
+<tr><td><code>functions/transactional-booking-engine/package.json</code></td><td>8 nodes</td></tr>
+<tr><td><code>appwrite.json</code></td><td>5 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: contains x40. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<!-- ====== 3. CLI & Skill Installers ====== -->
+<h2 id="cli-skills">3. CLI &amp; Skill Installers</h2>
+<p>CLI &amp; Skill Installers groups implementation around readmemd, mainjs, functions, booking, mostly in README.md, transactional-booking-engine/src/main.js, weekly-maintenance-cron/src/main.js. This section covers 47 nodes and 51 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: CLI &amp; Skill Installers (47 nodes, 51 edges)
+    subgraph cli_skills_README_md_f7b7a552["README.md"]
+        ai_search_intent_router_e646ea6f("AI Search Intent Router<br/><small>README.md</small>")
+        transactional_booking_engine_2ac332bb("Transactional Booking Engine Function<br/><small>README.md</small>")
+        ai_health_coach_11b46ab0("AI Health Coach<br/><small>README.md</small>")
+        google_gemini_25_flash_40c724f5("Google Gemini 2.5 Flash<br/><small>README.md</small>")
+        composite_booking_lock_a3e1ca27("Composite Booking Lock Pattern<br/><small>README.md</small>")
+        rollback_mechanism_5d65245f("Rollback Mechanism<br/><small>README.md</small>")
+        apns_notifications_d66bb165("APNs (Apple Push Notification)<br/><small>README.md</small>")
+        rbac_admins_0cd6cdb6("Admins Team<br/><small>README.md</small>")
+        rbac_doctors_86c3ea93("Doctors Team<br/><small>README.md</small>")
+    end
+    subgraph cli_skills_weekly_maintenance_cron_src_main_js_caa714b7["weekly-maintenance-cron/src/main.js"]
+        src_main_handleaisearchintentrouter_fbada464("handleAiSearchIntentRouter()<br/><small>weekly-maintenance-cron/src/main.js</small>")
+        src_main_handleweeklymaintenance_a1553fe6("handleWeeklyMaintenance()<br/><small>weekly-maintenance-cron/src/main.js</small>")
+        src_main_robustjsonparse_b278823b("robustJSONParse()<br/><small>weekly-maintenance-cron/src/main.js</small>")
+        src_main_parseflatjsonstring_80a3cddf("parseFlatJSONString()<br/><small>weekly-maintenance-cron/src/main.js</small>")
+        robust_json_parse_571af6bb("robustJSONParse Function<br/><small>weekly-maintenance-cron/src/main.js</small>")
+        search_index_generation_25fcc4f9("Search Index Generation Logic<br/><small>weekly-maintenance-cron/src/main.js</small>")
+        functions_weekly_maintenance_cron_src_main_js_5462e5d3("main.js")
+        functions_weekly_maintenance_cron_src_main_js_sr_ea69c869("sdk<br/><small>weekly-maintenance-cron/src/main.js</small>")
+    end
+    subgraph cli_skills_transactional_booking_engine_src_main_f625da1a["transactional-booking-engine/src/main.js"]
+        src_main_client_62590244("client<br/><small>transactional-booking-engine/src/main.js</small>")
+        src_main_databases_d1c0f5a3("databases<br/><small>transactional-booking-engine/src/main.js</small>")
+        functions_transactional_booking_engine_src_main_07b35de9("main.js")
+        src_main_messaging_b60c0f73("messaging<br/><small>transactional-booking-engine/src/main.js</small>")
+        src_main_payload_862e6617("payload<br/><small>transactional-booking-engine/src/main.js</small>")
+        src_main_permissions_11e51c41("permissions<br/><small>transactional-booking-engine/src/main.js</small>")
+        functions_transactional_booking_engine_src_main_2ef31bee("sdk<br/><small>transactional-booking-engine/src/main.js</small>")
+    end
+    src_main_handleaisearchintentrouter_fbada464 -->|calls| src_main_robustjsonparse_b278823b
+    src_main_handleweeklymaintenance_a1553fe6 -->|calls| src_main_robustjsonparse_b278823b
+    src_main_robustjsonparse_b278823b -->|calls| src_main_parseflatjsonstring_80a3cddf
+    ai_search_intent_router_e646ea6f -->|uses| google_gemini_25_flash_40c724f5
+    ai_search_intent_router_e646ea6f -->|calls| robust_json_parse_571af6bb
+    ai_health_coach_11b46ab0 -->|uses| google_gemini_25_flash_40c724f5
+    transactional_booking_engine_2ac332bb -->|uses| composite_booking_lock_a3e1ca27
+    transactional_booking_engine_2ac332bb -->|uses| rollback_mechanism_5d65245f
+    %% Omitted for readability: 23 nodes, 0 edges
+    class ai_search_intent_router_e646ea6f concept;
+    class transactional_booking_engine_2ac332bb concept;
+    class ai_health_coach_11b46ab0 concept;
+    class google_gemini_25_flash_40c724f5 concept;
+    class composite_booking_lock_a3e1ca27 concept;
+    class rollback_mechanism_5d65245f concept;
+    class apns_notifications_d66bb165 concept;
+    class rbac_admins_0cd6cdb6 concept;
+    class rbac_doctors_86c3ea93 concept;
+    class src_main_handleaisearchintentrouter_fbada464 api;
+    class src_main_handleweeklymaintenance_a1553fe6 function;
+    class src_main_robustjsonparse_b278823b function;
+    class src_main_parseflatjsonstring_80a3cddf function;
+    class robust_json_parse_571af6bb function;
+    class search_index_generation_25fcc4f9 klass;
+    class functions_weekly_maintenance_cron_src_main_js_5462e5d3 module;
+    class functions_weekly_maintenance_cron_src_main_js_sr_ea69c869 function;
+    class src_main_client_62590244 entry;
+    class src_main_databases_d1c0f5a3 function;
+    class functions_transactional_booking_engine_src_main_07b35de9 module;
+    class src_main_messaging_b60c0f73 function;
+    class src_main_payload_862e6617 function;
+    class src_main_permissions_11e51c41 function;
+    class functions_transactional_booking_engine_src_main_2ef31bee function;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>Medical Care Hub &amp; Personal Health Monitor</code><br><small style="color:var(--muted)">README.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing Medical Care Hub &amp; Personal Health Monitor.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><code>Medical_Vault Storage Bucket</code><br><small style="color:var(--muted)">README.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing Medical_Vault Storage Bucket.</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td><code>Admins Team</code><br><small style="color:var(--muted)">README.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing Admins Team.</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td><code>Doctors Team</code><br><small style="color:var(--muted)">README.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing Doctors Team.</td>
+</tr>
+<tr>
+  <td>5</td>
+  <td><code>Patients Team</code><br><small style="color:var(--muted)">README.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing Patients Team.</td>
+</tr>
+<tr>
+  <td>6</td>
+  <td><code>Transactional Booking Engine Function</code><br><small style="color:var(--muted)">README.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>Composite Booking Lock Pattern</code><br><small style="color:var(--muted)">README.md</small><br><code>Rollback Mechanism</code><br><small style="color:var(--muted)">README.md</small></td>
+  <td>Documentation node describing Transactional Booking Engine Function.</td>
+</tr>
+<tr>
+  <td>7</td>
+  <td><code>setup-auth-rbac.js</code><br><small style="color:var(--muted)">README.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing setup-auth-rbac.js.</td>
+</tr>
+<tr>
+  <td>8</td>
+  <td><code>setup-messaging.js</code><br><small style="color:var(--muted)">README.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing setup-messaging.js.</td>
+</tr>
+<tr>
+  <td>9</td>
+  <td><code>seed-db.js</code><br><small style="color:var(--muted)">README.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing seed-db.js.</td>
+</tr>
+<tr>
+  <td>10</td>
+  <td><code>test-backend.js</code><br><small style="color:var(--muted)">README.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing test-backend.js.</td>
+</tr>
+<tr>
+  <td>11</td>
+  <td><code>test-search-flow.js</code><br><small style="color:var(--muted)">README.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing test-search-flow.js.</td>
+</tr>
+<tr>
+  <td>12</td>
+  <td><code>Resend SMTP</code><br><small style="color:var(--muted)">README.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing Resend SMTP.</td>
+</tr>
+<tr>
+  <td>13</td>
+  <td><code>FCM (Firebase Cloud Messaging)</code><br><small style="color:var(--muted)">README.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing FCM (Firebase Cloud Messaging).</td>
+</tr>
+<tr>
+  <td>14</td>
+  <td><code>APNs (Apple Push Notification)</code><br><small style="color:var(--muted)">README.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing APNs (Apple Push Notification).</td>
+</tr>
+<tr>
+  <td>15</td>
+  <td><code>Composite Booking Lock Pattern</code><br><small style="color:var(--muted)">README.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td><code>Transactional Booking Engine Function</code><br><small style="color:var(--muted)">README.md</small></td>
+  <td>No direct outbound edge</td>
+  <td>Design note for Composite Booking Lock Pattern.</td>
+</tr>
+<tr>
+  <td>16</td>
+  <td><code>Rollback Mechanism</code><br><small style="color:var(--muted)">README.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td><code>Transactional Booking Engine Function</code><br><small style="color:var(--muted)">README.md</small></td>
+  <td>No direct outbound edge</td>
+  <td>Design note for Rollback Mechanism.</td>
+</tr>
+<tr>
+  <td>17</td>
+  <td><code>Appwrite CLI</code><br><small style="color:var(--muted)">skills/appwrite-cli/SKILL.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing Appwrite CLI.</td>
+</tr>
+<tr>
+  <td>18</td>
+  <td><code>appwrite.config.json</code><br><small style="color:var(--muted)">skills/appwrite-cli/SKILL.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing appwrite.config.json.</td>
+</tr>
+<tr>
+  <td>19</td>
+  <td><code>appt_{slot_id} Lock ID Pattern</code><br><small style="color:var(--muted)">transactional-booking-engine/src/main.js</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Design note for appt_{slot_id} Lock ID Pattern.</td>
+</tr>
+<tr>
+  <td>20</td>
+  <td><code>Permissions Using patientAuthId Pattern</code><br><small style="color:var(--muted)">transactional-booking-engine/src/main.js</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Design note for Permissions Using patientAuthId Pattern.</td>
+</tr>
+<tr>
+  <td>21</td>
+  <td><code>Patient Auth Identity Verification</code><br><small style="color:var(--muted)">transactional-booking-engine/src/main.js</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Design note for Patient Auth Identity Verification.</td>
+</tr>
+<tr>
+  <td>22</td>
+  <td><code>Weekly Maintenance Cron Function</code><br><small style="color:var(--muted)">README.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing Weekly Maintenance Cron Function.</td>
+</tr>
+<tr>
+  <td>23</td>
+  <td><code>AI Search Intent Router</code><br><small style="color:var(--muted)">README.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>Google Gemini 2.5 Flash</code><br><small style="color:var(--muted)">README.md</small><br><code>robustJSONParse Function</code><br><small style="color:var(--muted)">weekly-maintenance-cron/src/main.js</small></td>
+  <td>Documentation node describing AI Search Intent Router.</td>
+</tr>
+<tr>
+  <td>24</td>
+  <td><code>AI Health Coach</code><br><small style="color:var(--muted)">README.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>Google Gemini 2.5 Flash</code><br><small style="color:var(--muted)">README.md</small></td>
+  <td>Documentation node describing AI Health Coach.</td>
+</tr>
+<tr>
+  <td>25</td>
+  <td><code>Internal Reputation Sync</code><br><small style="color:var(--muted)">README.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing Internal Reputation Sync.</td>
+</tr>
+<tr>
+  <td>26</td>
+  <td><code>setup-appwrite-db.js</code><br><small style="color:var(--muted)">README.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing setup-appwrite-db.js.</td>
+</tr>
+<tr>
+  <td>27</td>
+  <td><code>Google Gemini 2.5 Flash</code><br><small style="color:var(--muted)">README.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td><code>AI Health Coach</code><br><small style="color:var(--muted)">README.md</small><br><code>AI Search Intent Router</code><br><small style="color:var(--muted)">README.md</small></td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing Google Gemini 2.5 Flash.</td>
+</tr>
+<tr>
+  <td>28</td>
+  <td><code>node-appwrite SDK</code><br><small style="color:var(--muted)">skills/appwrite-typescript/SKILL.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing node-appwrite SDK.</td>
+</tr>
+<tr>
+  <td>29</td>
+  <td><code>TablesDB API</code><br><small style="color:var(--muted)">skills/appwrite-typescript/SKILL.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing TablesDB API.</td>
+</tr>
+<tr>
+  <td>30</td>
+  <td><code>Permission &amp; Role System</code><br><small style="color:var(--muted)">skills/appwrite-typescript/SKILL.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing Permission &amp; Role System.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>README.md</code></td><td>22 nodes</td></tr>
+<tr><td><code>transactional-booking-engine/src/main.js</code></td><td>10 nodes</td></tr>
+<tr><td><code>weekly-maintenance-cron/src/main.js</code></td><td>9 nodes</td></tr>
+<tr><td><code>skills/appwrite-typescript/SKILL.md</code></td><td>4 nodes</td></tr>
+<tr><td><code>skills/appwrite-cli/SKILL.md</code></td><td>2 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: contains x12, has script x6, calls x4, depends on x4. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<!-- ====== 4. Serving API ====== -->
+<h2 id="serve-api">4. Serving API</h2>
+<p>Serving API groups implementation around test, search, flowjs, scripts, mostly in scripts/test-search-flow.js. This section covers 3 nodes and 2 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: Serving API (3 nodes, 2 edges)
+    scripts_test_search_flow_js_b35ed8e1("test-search-flow.js")
+    scripts_test_search_flow_sdk_ec30ad64("sdk<br/><small>scripts/test-search-flow.js</small>")
+    scripts_test_search_flow_run_ff1b6887("run()<br/><small>scripts/test-search-flow.js</small>")
+    scripts_test_search_flow_js_b35ed8e1 -->|contains| scripts_test_search_flow_sdk_ec30ad64
+    scripts_test_search_flow_js_b35ed8e1 -->|contains| scripts_test_search_flow_run_ff1b6887
+    class scripts_test_search_flow_js_b35ed8e1 test;
+    class scripts_test_search_flow_sdk_ec30ad64 test;
+    class scripts_test_search_flow_run_ff1b6887 test;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>test-search-flow.js</code><br><small style="color:var(--muted)">scripts/test-search-flow.js</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Verifies imports, entry points, or version behavior.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><code>sdk</code><br><small style="color:var(--muted)">scripts/test-search-flow.js</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>sdk node in scripts/test-search-flow.js.</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td><code>run()</code><br><small style="color:var(--muted)">scripts/test-search-flow.js</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>run() node in scripts/test-search-flow.js.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>scripts/test-search-flow.js</code></td><td>3 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: contains x2. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<!-- ====== 5. Security & Global Graph ====== -->
+<h2 id="security-global">5. Security &amp; Global Graph</h2>
+<p>Security &amp; Global Graph groups implementation around readmemd, collection, patient, profiles, mostly in README.md. This section covers 12 nodes and 17 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: Security &amp; Global Graph (12 nodes, 17 edges)
+    medical_hub_prod_46851566("Medical_Hub_Prod Database<br/><small>README.md</small>")
+    doctor_profiles_0c09cac5("Doctor_Profiles Collection<br/><small>README.md</small>")
+    appwrite_backend_85a69546("Appwrite Backend Infrastructure<br/><small>README.md</small>")
+    health_metrics_499821cf("Health_Metrics Collection<br/><small>README.md</small>")
+    patient_conditions_e16b62e2("Patient_Conditions Collection<br/><small>README.md</small>")
+    patient_profiles_41b46381("Patient_Profiles Collection<br/><small>README.md</small>")
+    schedule_slots_b007d51d("Schedule_Slots Collection<br/><small>README.md</small>")
+    appointments_88e546d8("Appointments Collection<br/><small>README.md</small>")
+    ai_insights_cache_2f7f94ca("AI_Insights_Cache Collection<br/><small>README.md</small>")
+    document_level_security_17eeeda3("Document-Level Security (DLS)<br/><small>README.md</small>")
+    patient_reviews_90cf7ddf("Patient_Reviews Collection<br/><small>README.md</small>")
+    vault_metadata_da012e53("Vault_Metadata Collection<br/><small>README.md</small>")
+    medical_hub_prod_46851566 -->|contains collection| patient_profiles_41b46381
+    medical_hub_prod_46851566 -->|contains collection| doctor_profiles_0c09cac5
+    medical_hub_prod_46851566 -->|contains collection| schedule_slots_b007d51d
+    medical_hub_prod_46851566 -->|contains collection| appointments_88e546d8
+    medical_hub_prod_46851566 -->|contains collection| patient_conditions_e16b62e2
+    medical_hub_prod_46851566 -->|contains collection| health_metrics_499821cf
+    medical_hub_prod_46851566 -->|contains collection| ai_insights_cache_2f7f94ca
+    medical_hub_prod_46851566 -->|contains collection| patient_reviews_90cf7ddf
+    medical_hub_prod_46851566 -->|contains collection| vault_metadata_da012e53
+    patient_profiles_41b46381 -->|applies to| document_level_security_17eeeda3
+    doctor_profiles_0c09cac5 -->|applies to| document_level_security_17eeeda3
+    doctor_profiles_0c09cac5 -->|references| patient_reviews_90cf7ddf
+    schedule_slots_b007d51d -->|references| appointments_88e546d8
+    appointments_88e546d8 -->|applies to| document_level_security_17eeeda3
+    patient_conditions_e16b62e2 -->|feeds into| ai_insights_cache_2f7f94ca
+    health_metrics_499821cf -->|feeds into| ai_insights_cache_2f7f94ca
+    appwrite_backend_85a69546 -->|contains| medical_hub_prod_46851566
+    class medical_hub_prod_46851566 concept;
+    class doctor_profiles_0c09cac5 concept;
+    class appwrite_backend_85a69546 concept;
+    class health_metrics_499821cf concept;
+    class patient_conditions_e16b62e2 concept;
+    class patient_profiles_41b46381 concept;
+    class schedule_slots_b007d51d concept;
+    class appointments_88e546d8 concept;
+    class ai_insights_cache_2f7f94ca concept;
+    class document_level_security_17eeeda3 concept;
+    class patient_reviews_90cf7ddf concept;
+    class vault_metadata_da012e53 concept;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>Appwrite Backend Infrastructure</code><br><small style="color:var(--muted)">README.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing Appwrite Backend Infrastructure.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><code>Medical_Hub_Prod Database</code><br><small style="color:var(--muted)">README.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing Medical_Hub_Prod Database.</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td><code>Patient_Profiles Collection</code><br><small style="color:var(--muted)">README.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing Patient_Profiles Collection.</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td><code>Doctor_Profiles Collection</code><br><small style="color:var(--muted)">README.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing Doctor_Profiles Collection.</td>
+</tr>
+<tr>
+  <td>5</td>
+  <td><code>Schedule_Slots Collection</code><br><small style="color:var(--muted)">README.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing Schedule_Slots Collection.</td>
+</tr>
+<tr>
+  <td>6</td>
+  <td><code>Appointments Collection</code><br><small style="color:var(--muted)">README.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing Appointments Collection.</td>
+</tr>
+<tr>
+  <td>7</td>
+  <td><code>Patient_Conditions Collection</code><br><small style="color:var(--muted)">README.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing Patient_Conditions Collection.</td>
+</tr>
+<tr>
+  <td>8</td>
+  <td><code>Health_Metrics Collection</code><br><small style="color:var(--muted)">README.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing Health_Metrics Collection.</td>
+</tr>
+<tr>
+  <td>9</td>
+  <td><code>AI_Insights_Cache Collection</code><br><small style="color:var(--muted)">README.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing AI_Insights_Cache Collection.</td>
+</tr>
+<tr>
+  <td>10</td>
+  <td><code>Patient_Reviews Collection</code><br><small style="color:var(--muted)">README.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing Patient_Reviews Collection.</td>
+</tr>
+<tr>
+  <td>11</td>
+  <td><code>Vault_Metadata Collection</code><br><small style="color:var(--muted)">README.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing Vault_Metadata Collection.</td>
+</tr>
+<tr>
+  <td>12</td>
+  <td><code>Document-Level Security (DLS)</code><br><small style="color:var(--muted)">README.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing Document-Level Security (DLS).</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>README.md</code></td><td>12 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: contains collection x9, applies to x3, references x2, feeds into x2. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<!-- ====== 6. Tests & Fixtures ====== -->
+<h2 id="tests-fixtures">6. Tests &amp; Fixtures</h2>
+<p>Tests &amp; Fixtures groups implementation around test, backendjs, scripts, sdk, mostly in scripts/test-backend.js. This section covers 3 nodes and 2 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: Tests &amp; Fixtures (3 nodes, 2 edges)
+    scripts_test_backend_js_52d0435e("test-backend.js")
+    scripts_test_backend_sdk_de98acff("sdk<br/><small>scripts/test-backend.js</small>")
+    scripts_test_backend_run_793a80b9("run()<br/><small>scripts/test-backend.js</small>")
+    scripts_test_backend_js_52d0435e -->|contains| scripts_test_backend_sdk_de98acff
+    scripts_test_backend_js_52d0435e -->|contains| scripts_test_backend_run_793a80b9
+    class scripts_test_backend_js_52d0435e test;
+    class scripts_test_backend_sdk_de98acff test;
+    class scripts_test_backend_run_793a80b9 test;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>test-backend.js</code><br><small style="color:var(--muted)">scripts/test-backend.js</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Verifies imports, entry points, or version behavior.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><code>sdk</code><br><small style="color:var(--muted)">scripts/test-backend.js</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>sdk node in scripts/test-backend.js.</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td><code>run()</code><br><small style="color:var(--muted)">scripts/test-backend.js</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>run() node in scripts/test-backend.js.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>scripts/test-backend.js</code></td><td>3 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: contains x2. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<!-- ====== 7. Messaging Setup Script ====== -->
+<h2 id="messaging-setup-script">7. Messaging Setup Script</h2>
+<p>Messaging Setup Script groups implementation around setup, messagingjs, scripts, path, mostly in scripts/setup-messaging.js. This section covers 5 nodes and 5 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: Messaging Setup Script (5 nodes, 5 edges)
+    scripts_setup_messaging_normalizenewlines_3d81006a("normalizeNewlines()<br/><small>scripts/setup-messaging.js</small>")
+    scripts_setup_messaging_run_9998b43f("run()<br/><small>scripts/setup-messaging.js</small>")
+    scripts_setup_messaging_fs_b123bde4("fs<br/><small>scripts/setup-messaging.js</small>")
+    scripts_setup_messaging_path_4f94dfda("path<br/><small>scripts/setup-messaging.js</small>")
+    scripts_setup_messaging_js_fefea2c2("setup-messaging.js")
+    scripts_setup_messaging_normalizenewlines_3d81006a -->|calls| scripts_setup_messaging_run_9998b43f
+    class scripts_setup_messaging_normalizenewlines_3d81006a function;
+    class scripts_setup_messaging_run_9998b43f function;
+    class scripts_setup_messaging_fs_b123bde4 function;
+    class scripts_setup_messaging_path_4f94dfda function;
+    class scripts_setup_messaging_js_fefea2c2 module;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>setup-messaging.js</code><br><small style="color:var(--muted)">scripts/setup-messaging.js</small></td>
+  <td><span class="tag tag-class">Module</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>setup-messaging.js node in scripts/setup-messaging.js.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><code>fs</code><br><small style="color:var(--muted)">scripts/setup-messaging.js</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>fs node in scripts/setup-messaging.js.</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td><code>path</code><br><small style="color:var(--muted)">scripts/setup-messaging.js</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>path node in scripts/setup-messaging.js.</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td><code>normalizeNewlines()</code><br><small style="color:var(--muted)">scripts/setup-messaging.js</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>run()</code><br><small style="color:var(--muted)">scripts/setup-messaging.js</small></td>
+  <td>normalizeNewlines() node in scripts/setup-messaging.js.</td>
+</tr>
+<tr>
+  <td>5</td>
+  <td><code>run()</code><br><small style="color:var(--muted)">scripts/setup-messaging.js</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>normalizeNewlines()</code><br><small style="color:var(--muted)">scripts/setup-messaging.js</small></td>
+  <td>No direct outbound edge</td>
+  <td>run() node in scripts/setup-messaging.js.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>scripts/setup-messaging.js</code></td><td>5 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: contains x4, calls x1. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<!-- ====== 8. Database Seed Script ====== -->
+<h2 id="database-seed-script">8. Database Seed Script</h2>
+<p>Database Seed Script groups implementation around seed, dbjs, scripts, sdk, mostly in scripts/seed-db.js. This section covers 5 nodes and 6 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: Database Seed Script (5 nodes, 6 edges)
+    scripts_seed_db_clearcollection_717c0c5a("clearCollection()<br/><small>scripts/seed-db.js</small>")
+    scripts_seed_db_encodegeohash_13153cf1("encodeGeohash()<br/><small>scripts/seed-db.js</small>")
+    scripts_seed_db_run_0b84247e("run()<br/><small>scripts/seed-db.js</small>")
+    scripts_seed_db_sdk_27f8241c("sdk<br/><small>scripts/seed-db.js</small>")
+    scripts_seed_db_js_e2a2679f("seed-db.js")
+    scripts_seed_db_encodegeohash_13153cf1 -->|calls| scripts_seed_db_run_0b84247e
+    scripts_seed_db_clearcollection_717c0c5a -->|calls| scripts_seed_db_run_0b84247e
+    class scripts_seed_db_clearcollection_717c0c5a function;
+    class scripts_seed_db_encodegeohash_13153cf1 function;
+    class scripts_seed_db_run_0b84247e function;
+    class scripts_seed_db_sdk_27f8241c function;
+    class scripts_seed_db_js_e2a2679f module;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>seed-db.js</code><br><small style="color:var(--muted)">scripts/seed-db.js</small></td>
+  <td><span class="tag tag-class">Module</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>seed-db.js node in scripts/seed-db.js.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><code>sdk</code><br><small style="color:var(--muted)">scripts/seed-db.js</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>sdk node in scripts/seed-db.js.</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td><code>encodeGeohash()</code><br><small style="color:var(--muted)">scripts/seed-db.js</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>run()</code><br><small style="color:var(--muted)">scripts/seed-db.js</small></td>
+  <td>Caches analysis results or computes cache keys.</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td><code>clearCollection()</code><br><small style="color:var(--muted)">scripts/seed-db.js</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>run()</code><br><small style="color:var(--muted)">scripts/seed-db.js</small></td>
+  <td>clearCollection() node in scripts/seed-db.js.</td>
+</tr>
+<tr>
+  <td>5</td>
+  <td><code>run()</code><br><small style="color:var(--muted)">scripts/seed-db.js</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>clearCollection()</code><br><small style="color:var(--muted)">scripts/seed-db.js</small><br><code>encodeGeohash()</code><br><small style="color:var(--muted)">scripts/seed-db.js</small></td>
+  <td>No direct outbound edge</td>
+  <td>run() node in scripts/seed-db.js.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>scripts/seed-db.js</code></td><td>5 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: contains x4, calls x2. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<!-- ====== 9. Database Setup Script ====== -->
+<h2 id="database-setup-script">9. Database Setup Script</h2>
+<p>Database Setup Script groups implementation around setup, appwrite, dbjs, scripts, mostly in scripts/setup-appwrite-db.js. This section covers 3 nodes and 2 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: Database Setup Script (3 nodes, 2 edges)
+    scripts_setup_appwrite_db_js_a12ef2c0("setup-appwrite-db.js")
+    scripts_setup_appwrite_db_sdk_5fe088a9("sdk<br/><small>scripts/setup-appwrite-db.js</small>")
+    scripts_setup_appwrite_db_run_ed83e124("run()<br/><small>scripts/setup-appwrite-db.js</small>")
+    scripts_setup_appwrite_db_js_a12ef2c0 -->|contains| scripts_setup_appwrite_db_sdk_5fe088a9
+    scripts_setup_appwrite_db_js_a12ef2c0 -->|contains| scripts_setup_appwrite_db_run_ed83e124
+    class scripts_setup_appwrite_db_js_a12ef2c0 module;
+    class scripts_setup_appwrite_db_sdk_5fe088a9 function;
+    class scripts_setup_appwrite_db_run_ed83e124 function;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>setup-appwrite-db.js</code><br><small style="color:var(--muted)">scripts/setup-appwrite-db.js</small></td>
+  <td><span class="tag tag-class">Module</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>setup-appwrite-db.js node in scripts/setup-appwrite-db.js.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><code>sdk</code><br><small style="color:var(--muted)">scripts/setup-appwrite-db.js</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>sdk node in scripts/setup-appwrite-db.js.</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td><code>run()</code><br><small style="color:var(--muted)">scripts/setup-appwrite-db.js</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>run() node in scripts/setup-appwrite-db.js.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>scripts/setup-appwrite-db.js</code></td><td>3 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: contains x2. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<!-- ====== 10. Auth RBAC Setup Script ====== -->
+<h2 id="auth-rbac-setup-script">10. Auth RBAC Setup Script</h2>
+<p>Auth RBAC Setup Script groups implementation around setup, auth, rbacjs, scripts, mostly in scripts/setup-auth-rbac.js. This section covers 3 nodes and 2 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: Auth RBAC Setup Script (3 nodes, 2 edges)
+    scripts_setup_auth_rbac_js_33801260("setup-auth-rbac.js")
+    scripts_setup_auth_rbac_sdk_eb57e163("sdk<br/><small>scripts/setup-auth-rbac.js</small>")
+    scripts_setup_auth_rbac_run_a1266838("run()<br/><small>scripts/setup-auth-rbac.js</small>")
+    scripts_setup_auth_rbac_js_33801260 -->|contains| scripts_setup_auth_rbac_sdk_eb57e163
+    scripts_setup_auth_rbac_js_33801260 -->|contains| scripts_setup_auth_rbac_run_a1266838
+    class scripts_setup_auth_rbac_js_33801260 module;
+    class scripts_setup_auth_rbac_sdk_eb57e163 function;
+    class scripts_setup_auth_rbac_run_a1266838 function;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>setup-auth-rbac.js</code><br><small style="color:var(--muted)">scripts/setup-auth-rbac.js</small></td>
+  <td><span class="tag tag-class">Module</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>setup-auth-rbac.js node in scripts/setup-auth-rbac.js.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><code>sdk</code><br><small style="color:var(--muted)">scripts/setup-auth-rbac.js</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>sdk node in scripts/setup-auth-rbac.js.</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td><code>run()</code><br><small style="color:var(--muted)">scripts/setup-auth-rbac.js</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>run() node in scripts/setup-auth-rbac.js.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>scripts/setup-auth-rbac.js</code></td><td>3 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: contains x2. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<h2 id="hyperedges">Group Relationships (Hyperedges)</h2>
+<div class="grid">
+
+  <div class="card">
+    <h4>Appointment Booking Flow</h4>
+    <p><code>participate_in</code> — 6 participants</p>
+    <ul>
+      <li><code>transactional_booking_engine</code></li>
+      <li><code>appointments</code></li>
+      <li><code>schedule_slots</code></li>
+      <li><code>composite_booking_lock</code></li>
+      <li><code>rollback_mechanism</code></li>
+      <li>... and 1 more</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h4>AI Search &amp; Health Coach Pipeline</h4>
+    <p><code>participate_in</code> — 6 participants</p>
+    <ul>
+      <li><code>weekly_maintenance_cron</code></li>
+      <li><code>ai_search_intent_router</code></li>
+      <li><code>ai_health_coach</code></li>
+      <li><code>google_gemini_25_flash</code></li>
+      <li><code>robust_json_parse</code></li>
+      <li>... and 1 more</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h4>Notification System</h4>
+    <p><code>participate_in</code> — 5 participants</p>
+    <ul>
+      <li><code>transactional_booking_engine</code></li>
+      <li><code>resend_smtp</code></li>
+      <li><code>fcm_notifications</code></li>
+      <li><code>apns_notifications</code></li>
+      <li><code>setup_messaging</code></li>
+    </ul>
+  </div>
+</div>
+<hr>
+<h2 id="stats">Project Statistics</h2>
+
+<div class="grid">
+  <div class="card">
+    <h4>Graph</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><td>Nodes</td><td>125</td></tr>
+      <tr><td>Edges</td><td>128</td></tr>
+      <tr><td>Hyperedges</td><td>3</td></tr>
+      <tr><td>Communities</td><td>15</td></tr>
+      <tr><td>Documented Sections</td><td>9</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Edge Confidence</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><td>EXTRACTED</td><td>126</td></tr>
+      <tr><td>INFERRED</td><td>2</td></tr>
+      <tr><td>AMBIGUOUS</td><td>0</td></tr>
+    </table>
+  </div>
+</div>
+
+<div style="text-align:center; padding:40px 0; color: var(--muted); font-size:0.9rem;">
+  <p>medcare-home — Architecture Documentation</p>
+  <p>Generated: 2026-05-23 22:19 UTC · graphify callflow-html</p>
+</div>
+
+</div><!-- .container -->
+
+<script>
+(function () {
+  const mermaidConfig = {
+    startOnLoad: false,
+    theme: 'dark',
+    securityLevel: 'loose',
+    flowchart: { htmlLabels: true, useMaxWidth: true },
+    themeVariables: {
+      primaryColor: '#1e293b',
+      primaryTextColor: '#e2e8f0',
+      primaryBorderColor: '#38bdf8',
+      secondaryColor: '#0f172a',
+      tertiaryColor: '#334155',
+      lineColor: '#64748b',
+      textColor: '#e2e8f0',
+    }
+  };
+
+  mermaid.initialize(mermaidConfig);
+
+  function clamp(value, min, max) {
+    return Math.min(max, Math.max(min, value));
+  }
+
+  function enhanceMermaidDiagrams() {
+    document.querySelectorAll('.mermaid').forEach((container) => {
+      if (container.dataset.zoomReady === 'true') return;
+      const svg = container.querySelector('svg');
+      if (!svg) return;
+
+      container.dataset.zoomReady = 'true';
+      container.classList.add('is-enhanced');
+
+      const viewport = document.createElement('div');
+      viewport.className = 'mermaid-viewport';
+      svg.parentNode.insertBefore(viewport, svg);
+      viewport.appendChild(svg);
+
+      const toolbar = document.createElement('div');
+      toolbar.className = 'mermaid-toolbar';
+      toolbar.innerHTML = [
+        '<button type="button" data-action="zoom-out" title="Zoom out">-</button>',
+        '<span class="zoom-level" data-role="level">100%</span>',
+        '<button type="button" data-action="zoom-in" title="Zoom in">+</button>',
+        '<button type="button" data-action="fit" title="Fit width">Fit</button>',
+        '<button type="button" data-action="reset" title="Reset view">Reset</button>'
+      ].join('');
+      container.insertBefore(toolbar, viewport);
+
+      const state = { scale: 1, x: 0, y: 0, dragging: false, startX: 0, startY: 0, originX: 0, originY: 0 };
+      const level = toolbar.querySelector('[data-role="level"]');
+
+      function applyTransform() {
+        svg.style.transform = `translate(${state.x}px, ${state.y}px) scale(${state.scale})`;
+        level.textContent = `${Math.round(state.scale * 100)}%`;
+      }
+
+      function zoomBy(delta) {
+        state.scale = clamp(state.scale + delta, 0.25, 3);
+        applyTransform();
+      }
+
+      function reset() {
+        state.scale = 1;
+        state.x = 0;
+        state.y = 0;
+        applyTransform();
+      }
+
+      function fitWidth() {
+        const rawWidth = svg.viewBox && svg.viewBox.baseVal && svg.viewBox.baseVal.width
+          ? svg.viewBox.baseVal.width
+          : svg.getBoundingClientRect().width / state.scale;
+        if (!rawWidth) {
+          reset();
+          return;
+        }
+        state.scale = clamp((viewport.clientWidth - 48) / rawWidth, 0.25, 1.4);
+        state.x = 0;
+        state.y = 0;
+        applyTransform();
+      }
+
+      toolbar.addEventListener('click', (event) => {
+        const button = event.target.closest('button[data-action]');
+        if (!button) return;
+        const action = button.dataset.action;
+        if (action === 'zoom-in') zoomBy(0.15);
+        if (action === 'zoom-out') zoomBy(-0.15);
+        if (action === 'fit') fitWidth();
+        if (action === 'reset') reset();
+      });
+
+      viewport.addEventListener('wheel', (event) => {
+        if (!event.ctrlKey && !event.metaKey) return;
+        event.preventDefault();
+        zoomBy(event.deltaY < 0 ? 0.1 : -0.1);
+      }, { passive: false });
+
+      viewport.addEventListener('pointerdown', (event) => {
+        if (event.button !== 0) return;
+        state.dragging = true;
+        state.startX = event.clientX;
+        state.startY = event.clientY;
+        state.originX = state.x;
+        state.originY = state.y;
+        viewport.classList.add('is-dragging');
+        viewport.setPointerCapture(event.pointerId);
+      });
+
+      viewport.addEventListener('pointermove', (event) => {
+        if (!state.dragging) return;
+        state.x = state.originX + event.clientX - state.startX;
+        state.y = state.originY + event.clientY - state.startY;
+        applyTransform();
+      });
+
+      function endDrag(event) {
+        if (!state.dragging) return;
+        state.dragging = false;
+        viewport.classList.remove('is-dragging');
+        if (viewport.hasPointerCapture(event.pointerId)) {
+          viewport.releasePointerCapture(event.pointerId);
+        }
+      }
+
+      viewport.addEventListener('pointerup', endDrag);
+      viewport.addEventListener('pointercancel', endDrag);
+      applyTransform();
+    });
+  }
+
+  function renderMermaid() {
+    const result = mermaid.run
+      ? mermaid.run({ querySelector: '.mermaid' })
+      : Promise.resolve();
+    Promise.resolve(result)
+      .then(enhanceMermaidDiagrams)
+      .catch((error) => {
+        console.error('Mermaid render failed:', error);
+        enhanceMermaidDiagrams();
+      });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', renderMermaid);
+  } else {
+    renderMermaid();
+  }
+})();
+</script>
+
+</body>
+</html>

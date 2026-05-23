@@ -1,0 +1,16 @@
+/home/dr-tohamy/Dev_World/Mobile_Projects/medcare-home/appwrite.json
+/home/dr-tohamy/Dev_World/Mobile_Projects/medcare-home/package.json
+/home/dr-tohamy/Dev_World/Mobile_Projects/medcare-home/scripts/setup-messaging.js
+/home/dr-tohamy/Dev_World/Mobile_Projects/medcare-home/scripts/seed-db.js
+/home/dr-tohamy/Dev_World/Mobile_Projects/medcare-home/scripts/test-backend.js
+/home/dr-tohamy/Dev_World/Mobile_Projects/medcare-home/scripts/setup-auth-rbac.js
+/home/dr-tohamy/Dev_World/Mobile_Projects/medcare-home/scripts/test-search-flow.js
+/home/dr-tohamy/Dev_World/Mobile_Projects/medcare-home/scripts/setup-appwrite-db.js
+/home/dr-tohamy/Dev_World/Mobile_Projects/medcare-home/functions/weekly-maintenance-cron/package.json
+/home/dr-tohamy/Dev_World/Mobile_Projects/medcare-home/functions/weekly-maintenance-cron/src/main.js
+/home/dr-tohamy/Dev_World/Mobile_Projects/medcare-home/functions/transactional-booking-engine/package.json
+/home/dr-tohamy/Dev_World/Mobile_Projects/medcare-home/functions/transactional-booking-engine/src/main.js
+/home/dr-tohamy/Dev_World/Mobile_Projects/medcare-home/functions_list.txt
+/home/dr-tohamy/Dev_World/Mobile_Projects/medcare-home/README.md
+/home/dr-tohamy/Dev_World/Mobile_Projects/medcare-home/.agents/skills/appwrite-typescript/SKILL.md
+/home/dr-tohamy/Dev_World/Mobile_Projects/medcare-home/.agents/skills/appwrite-cli/SKILL.md

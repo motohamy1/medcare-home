@@ -3,7 +3,8 @@ const sdk = require('node-appwrite');
 /**
  * Transactional Booking Engine Appwrite Function
  * Handles highly concurrent, transaction-safe doctor appointment booking.
- * Triggers push notifications upon successful reservation.
+ * Triggers push notifications and transactional emails (Resend SMTP) to the doctor upon successful reservation.
+ * Enforces strict Document-Level Security using the patient's auth_id (not profile document ID) for permissions.
  */
 module.exports = async (context) => {
     // 1. Parse request body
@@ -80,7 +81,36 @@ module.exports = async (context) => {
         }, 409);
     }
 
-    // 4. Optimistic locking / Transact phase
+    // 4. Verify patient profile ownership and resolve auth_id
+    let patientAuthId = null;
+    try {
+        const patientProfile = await databases.getDocument(databaseId, 'Patient_Profiles', patient_profile_id);
+        patientAuthId = patientProfile.auth_id;
+        if (!patientAuthId) {
+            throw new Error("Patient profile does not have a valid auth_id.");
+        }
+
+        // SECURITY: If this function is called by an authenticated user (not server-side API key),
+        // verify the caller owns the requested patient profile.
+        const callerUserId = context.req.headers['x-appwrite-user-id'] || null;
+        if (callerUserId && callerUserId !== patientAuthId) {
+            context.error(`SECURITY VIOLATION: Caller (${callerUserId}) attempted to book for patient profile owned by (${patientAuthId}).`);
+            return context.res.json({
+                success: false,
+                error: "Forbidden: You can only book appointments for your own patient profiles."
+            }, 403);
+        }
+
+        context.log(`Resolved patient auth_id: ${patientAuthId}`);
+    } catch (e) {
+        context.error(`Failed to resolve patient profile ${patient_profile_id}: ${e.message}`);
+        return context.res.json({
+            success: false,
+            error: `Invalid patient profile: ${patient_profile_id}`
+        }, 400);
+    }
+
+    // 5. Optimistic locking / Transact phase
     try {
         console.log(`Locking slot: ${slot_id}...`);
         await databases.updateDocument(databaseId, 'Schedule_Slots', slot_id, {
@@ -94,16 +124,17 @@ module.exports = async (context) => {
         }, 500);
     }
 
-    // 5. Create the Appointment Document (Unique lock check)
+    // 6. Create the Appointment Document (Unique lock check)
     let appointment = null;
     try {
         context.log(`Creating Appointment document with ID: ${appointmentDocId}...`);
         
-        // Document security: Enforce Read/Write ONLY by the patient and the doctor
+        // Document security: Enforce Read/Write ONLY by the patient's auth_id and the doctor's auth_id.
+        // CRITICAL: We use patientAuthId (the Appwrite Auth user ID), NOT patient_profile_id (the document ID).
         const permissions = [
-            sdk.Permission.read(sdk.Role.user(patient_profile_id)), // Patient auth_id
-            sdk.Permission.read(sdk.Role.user(doctor_id)),          // Doctor auth_id
-            sdk.Permission.write(sdk.Role.user(patient_profile_id)),
+            sdk.Permission.read(sdk.Role.user(patientAuthId)),
+            sdk.Permission.read(sdk.Role.user(doctor_id)),
+            sdk.Permission.write(sdk.Role.user(patientAuthId)),
             sdk.Permission.write(sdk.Role.user(doctor_id))
         ];
 
@@ -160,12 +191,10 @@ module.exports = async (context) => {
         // Note: The appointment is already created, so we shouldn't fail the entire request, but log the mismatch.
     }
 
-    // 7. Trigger Messaging (Push Notification)
+    // 7. Trigger Messaging (Push Notification to Doctor)
+    let pushStatus = 'pending';
     try {
         context.log(`Sending Push Notification to Doctor (${doctor_id})...`);
-        
-        // In Appwrite, we can send push notifications to specific users
-        // The doctor ID acts as their user/auth ID
         await messaging.createPush(
             sdk.ID.unique(),
             "New Appointment Booking Request",
@@ -179,11 +208,73 @@ module.exports = async (context) => {
                 slotId: slot_id
             }
         );
-        
+        pushStatus = 'sent';
         context.log("Push notification successfully sent.");
     } catch (e) {
+        pushStatus = 'failed';
         context.error(`Failed to send push notification to doctor: ${e.message}`);
         // Do not fail the booking request if only the push notification failed
+    }
+
+    // 8. Send Transactional Email Confirmation to Doctor
+    let emailStatus = 'pending';
+    try {
+        context.log(`Sending transactional email confirmation to Doctor (${doctor_id})...`);
+
+        // Fetch doctor profile to personalize email
+        let doctorName = 'Doctor';
+        try {
+            const doctorProfile = await databases.getDocument(databaseId, 'Doctor_Profiles', doctor_id);
+            doctorName = doctorProfile.full_name || doctorName;
+        } catch (profileErr) {
+            context.log(`Could not fetch doctor profile for email personalization: ${profileErr.message}`);
+        }
+
+        // Fetch patient profile to include in email
+        let patientName = 'A patient';
+        try {
+            const patientProfile = await databases.getDocument(databaseId, 'Patient_Profiles', patient_profile_id);
+            patientName = patientProfile.full_name || patientName;
+        } catch (profileErr) {
+            context.log(`Could not fetch patient profile for email personalization: ${profileErr.message}`);
+        }
+
+        const emailHtml = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;">
+            <h2 style="color: #2c3e50;">New Appointment Booking</h2>
+            <p>Hello Dr. ${doctorName},</p>
+            <p><strong>${patientName}</strong> has requested a new appointment through Medical Care Hub.</p>
+            <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 20px 0;" />
+            <p><strong>Appointment ID:</strong> ${appointmentDocId}</p>
+            <p><strong>Slot ID:</strong> ${slot_id}</p>
+            <p><strong>Status:</strong> PENDING (awaiting your confirmation)</p>
+            ${symptoms_notes ? `<p><strong>Patient Notes:</strong> ${symptoms_notes}</p>` : ''}
+            <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 20px 0;" />
+            <p style="color: #666; font-size: 12px;">This is an automated message from Medical Care Hub. Please log in to your dashboard to confirm or manage this appointment.</p>
+        </div>
+        `;
+
+        await messaging.createEmail(
+            sdk.ID.unique(),
+            `New Appointment Request — ${appointmentDocId}`,
+            emailHtml,
+            [], // topics
+            [doctor_id], // targeted users
+            [], // targets
+            [], // cc
+            [], // bcc
+            [], // attachments
+            false, // draft
+            true, // html = true (content is HTML)
+            appointmentDocId // replyTo (optional)
+        );
+
+        emailStatus = 'sent';
+        context.log("Transactional email successfully sent.");
+    } catch (e) {
+        emailStatus = 'failed';
+        context.error(`Failed to send transactional email to doctor: ${e.message}`);
+        // Do not fail the booking request if only the email failed
     }
 
     return context.res.json({
@@ -195,6 +286,10 @@ module.exports = async (context) => {
             doctor_id: appointment.doctor_id,
             slot_id: appointment.slot_id,
             status: appointment.status
+        },
+        notifications: {
+            push: pushStatus,
+            email: emailStatus
         }
     }, 201);
 };

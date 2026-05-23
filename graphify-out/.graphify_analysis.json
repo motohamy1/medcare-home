@@ -1,0 +1,312 @@
+{
+  "communities": {
+    "0": [
+      "apns_notifications",
+      "appt_slot_id_lock",
+      "appwrite_cli_tool",
+      "appwrite_config_json",
+      "composite_booking_lock",
+      "fcm_notifications",
+      "medcare_home",
+      "medical_vault_bucket",
+      "patient_identity_verification",
+      "permissions_patient_auth_id",
+      "rbac_admins",
+      "rbac_doctors",
+      "rbac_patients",
+      "resend_smtp",
+      "rollback_mechanism",
+      "seed_db",
+      "setup_auth_rbac",
+      "setup_messaging",
+      "test_backend",
+      "test_search_flow",
+      "transactional_booking_engine"
+    ],
+    "1": [
+      "medcare_home_package_author",
+      "medcare_home_package_dependencies",
+      "medcare_home_package_dependencies_dotenv",
+      "medcare_home_package_dependencies_node_appwrite",
+      "medcare_home_package_description",
+      "medcare_home_package_keywords",
+      "medcare_home_package_license",
+      "medcare_home_package_main",
+      "medcare_home_package_name",
+      "medcare_home_package_scripts",
+      "medcare_home_package_scripts_seed",
+      "medcare_home_package_scripts_setup",
+      "medcare_home_package_scripts_setup_auth",
+      "medcare_home_package_scripts_setup_messaging",
+      "medcare_home_package_scripts_test_backend",
+      "medcare_home_package_scripts_test_search",
+      "medcare_home_package_version",
+      "package_json"
+    ],
+    "2": [
+      "ai_health_coach",
+      "ai_search_intent_router",
+      "appwrite_permissions_role",
+      "gemini_response_mimetype",
+      "google_gemini_25_flash",
+      "internal_reputation_sync",
+      "node_appwrite_sdk",
+      "robust_json_parse",
+      "search_index_generation",
+      "setup_appwrite_db",
+      "ssr_auth_pattern",
+      "tablesdb_api",
+      "weekly_maintenance_cron"
+    ],
+    "3": [
+      "functions_weekly_maintenance_cron_package_json",
+      "weekly_maintenance_cron_package_author",
+      "weekly_maintenance_cron_package_dependencies",
+      "weekly_maintenance_cron_package_dependencies_node_appwrite",
+      "weekly_maintenance_cron_package_description",
+      "weekly_maintenance_cron_package_keywords",
+      "weekly_maintenance_cron_package_license",
+      "weekly_maintenance_cron_package_main",
+      "weekly_maintenance_cron_package_name",
+      "weekly_maintenance_cron_package_scripts",
+      "weekly_maintenance_cron_package_scripts_test",
+      "weekly_maintenance_cron_package_type",
+      "weekly_maintenance_cron_package_version"
+    ],
+    "4": [
+      "ai_insights_cache",
+      "appointments",
+      "appwrite_backend",
+      "doctor_profiles",
+      "document_level_security",
+      "health_metrics",
+      "medical_hub_prod",
+      "patient_conditions",
+      "patient_profiles",
+      "patient_reviews",
+      "schedule_slots",
+      "vault_metadata"
+    ],
+    "5": [
+      "functions_transactional_booking_engine_package_json",
+      "transactional_booking_engine_package_dependencies",
+      "transactional_booking_engine_package_dependencies_node_appwrite",
+      "transactional_booking_engine_package_description",
+      "transactional_booking_engine_package_devdependencies",
+      "transactional_booking_engine_package_main",
+      "transactional_booking_engine_package_name",
+      "transactional_booking_engine_package_version"
+    ],
+    "6": [
+      "functions_transactional_booking_engine_src_main_js",
+      "functions_transactional_booking_engine_src_main_js_src_main_sdk",
+      "src_main_client",
+      "src_main_databases",
+      "src_main_messaging",
+      "src_main_payload",
+      "src_main_permissions"
+    ],
+    "7": [
+      "functions_weekly_maintenance_cron_src_main_js",
+      "functions_weekly_maintenance_cron_src_main_js_src_main_sdk",
+      "src_main_handleaisearchintentrouter",
+      "src_main_handleweeklymaintenance",
+      "src_main_parseflatjsonstring",
+      "src_main_robustjsonparse"
+    ],
+    "8": [
+      "appwrite_json",
+      "medcare_home_appwrite_endpoint",
+      "medcare_home_appwrite_functions",
+      "medcare_home_appwrite_projectid",
+      "medcare_home_appwrite_projectname"
+    ],
+    "9": [
+      "scripts_seed_db_clearcollection",
+      "scripts_seed_db_encodegeohash",
+      "scripts_seed_db_js",
+      "scripts_seed_db_run",
+      "scripts_seed_db_sdk"
+    ],
+    "10": [
+      "scripts_setup_messaging_fs",
+      "scripts_setup_messaging_js",
+      "scripts_setup_messaging_normalizenewlines",
+      "scripts_setup_messaging_path",
+      "scripts_setup_messaging_run"
+    ],
+    "11": [
+      "scripts_setup_appwrite_db_js",
+      "scripts_setup_appwrite_db_run",
+      "scripts_setup_appwrite_db_sdk"
+    ],
+    "12": [
+      "scripts_setup_auth_rbac_js",
+      "scripts_setup_auth_rbac_run",
+      "scripts_setup_auth_rbac_sdk"
+    ],
+    "13": [
+      "scripts_test_backend_js",
+      "scripts_test_backend_run",
+      "scripts_test_backend_sdk"
+    ],
+    "14": [
+      "scripts_test_search_flow_js",
+      "scripts_test_search_flow_run",
+      "scripts_test_search_flow_sdk"
+    ]
+  },
+  "cohesion": {
+    "0": 0.1,
+    "1": 0.1111111111111111,
+    "2": 0.16666666666666666,
+    "3": 0.15384615384615385,
+    "4": 0.25757575757575757,
+    "5": 0.25,
+    "6": 0.2857142857142857,
+    "7": 0.5333333333333333,
+    "8": 0.4,
+    "9": 0.6,
+    "10": 0.5,
+    "11": 0.6666666666666666,
+    "12": 0.6666666666666666,
+    "13": 0.6666666666666666,
+    "14": 0.6666666666666666
+  },
+  "gods": [
+    {
+      "id": "medcare_home",
+      "label": "Medical Care Hub & Personal Health Monitor",
+      "degree": 17
+    },
+    {
+      "id": "medical_hub_prod",
+      "label": "Medical_Hub_Prod Database",
+      "degree": 10
+    },
+    {
+      "id": "medcare_home_package_scripts",
+      "label": "scripts",
+      "degree": 7
+    },
+    {
+      "id": "transactional_booking_engine",
+      "label": "Transactional Booking Engine Function",
+      "degree": 6
+    },
+    {
+      "id": "node_appwrite_sdk",
+      "label": "node-appwrite SDK",
+      "degree": 6
+    },
+    {
+      "id": "weekly_maintenance_cron",
+      "label": "Weekly Maintenance Cron Function",
+      "degree": 5
+    },
+    {
+      "id": "src_main_robustjsonparse",
+      "label": "robustJSONParse()",
+      "degree": 4
+    },
+    {
+      "id": "ai_search_intent_router",
+      "label": "AI Search Intent Router",
+      "degree": 4
+    },
+    {
+      "id": "scripts_seed_db_run",
+      "label": "run()",
+      "degree": 3
+    },
+    {
+      "id": "doctor_profiles",
+      "label": "Doctor_Profiles Collection",
+      "degree": 3
+    }
+  ],
+  "surprises": [
+    {
+      "source": "Transactional Booking Engine Function",
+      "target": "Permissions Using patientAuthId Pattern",
+      "source_files": [
+        "README.md",
+        "functions/transactional-booking-engine/src/main.js"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "enforces",
+      "why": "crosses file types (doc \u2194 code); connects across different repos/directories; peripheral node `Permissions Using patientAuthId Pattern` unexpectedly reaches hub `Transactional Booking Engine Function`"
+    },
+    {
+      "source": "Medical Care Hub & Personal Health Monitor",
+      "target": "Appwrite CLI",
+      "source_files": [
+        "README.md",
+        ".agents/skills/appwrite-cli/SKILL.md"
+      ],
+      "confidence": "INFERRED",
+      "relation": "deployed_with",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories; peripheral node `Appwrite CLI` unexpectedly reaches hub `Medical Care Hub & Personal Health Monitor`"
+    },
+    {
+      "source": "AI Search Intent Router",
+      "target": "Gemini responseMimeType JSON Mode",
+      "source_files": [
+        "README.md",
+        "functions/weekly-maintenance-cron/src/main.js"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "configures",
+      "why": "crosses file types (doc \u2194 code); connects across different repos/directories"
+    },
+    {
+      "source": "AI Search Intent Router",
+      "target": "robustJSONParse Function",
+      "source_files": [
+        "README.md",
+        "functions/weekly-maintenance-cron/src/main.js"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "crosses file types (doc \u2194 code); connects across different repos/directories"
+    },
+    {
+      "source": "Internal Reputation Sync",
+      "target": "Search Index Generation Logic",
+      "source_files": [
+        "README.md",
+        "functions/weekly-maintenance-cron/src/main.js"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "implements",
+      "why": "crosses file types (doc \u2194 code); connects across different repos/directories"
+    }
+  ],
+  "questions": [
+    {
+      "type": "bridge_node",
+      "question": "Why does `Medical Care Hub & Personal Health Monitor` connect `Community 0` to `Community 2`, `Community 4`?",
+      "why": "High betweenness centrality (0.101) - this node is a cross-community bridge."
+    },
+    {
+      "type": "bridge_node",
+      "question": "Why does `Appwrite Backend Infrastructure` connect `Community 4` to `Community 0`?",
+      "why": "High betweenness centrality (0.049) - this node is a cross-community bridge."
+    },
+    {
+      "type": "isolated_nodes",
+      "question": "What connects `projectId`, `projectName`, `endpoint` to the rest of the system?",
+      "why": "71 weakly-connected nodes found - possible documentation gaps or missing edges."
+    },
+    {
+      "type": "low_cohesion",
+      "question": "Should `Community 0` be split into smaller, more focused modules?",
+      "why": "Cohesion score 0.1 - nodes in this community are weakly interconnected."
+    },
+    {
+      "type": "low_cohesion",
+      "question": "Should `Community 1` be split into smaller, more focused modules?",
+      "why": "Cohesion score 0.1111111111111111 - nodes in this community are weakly interconnected."
+    }
+  ]
+}

@@ -4,8 +4,8 @@
     "endpoint": "https://fra.cloud.appwrite.io/v1",
     "functions": [
         {
-            "$id": "ai-health-coach-cron",
-            "name": "AI Health Coach & Weekly Maintenance",
+            "$id": "weekly-maintenance-cron",
+            "name": "Weekly Maintenance Cron",
             "runtime": "node-18.0",
             "execute": [
                 "any"

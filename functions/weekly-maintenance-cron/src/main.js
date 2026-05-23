@@ -2,7 +2,7 @@ const sdk = require('node-appwrite');
 
 /**
  * Weekly Maintenance Cron & AI Search Intent Router (Consolidated)
- * 
+ *
  * Scheduled: Runs every Sunday at 02:00 AM (0 2 * * 0) -> Performs maintenance tasks.
  * HTTP Triggered: Acts as the AI Search Intent Router using Google Gemini 2.5 Flash.
  */
@@ -37,6 +37,12 @@ module.exports = async (context) => {
 };
 
 /**
+ * Weekly Maintenance Job
+ * Combines two maintenance jobs:
+ * 1. AI Health Coach: Aggregates metrics & conditions, generates tips via Gemini, caches them.
+ * 2. Internal Reputation Sync: Aggregates patient reviews, updates doctor ratings & search index.
+ */
+/**
  * AI Search Intent Router
  * Uses Google Gemini 2.5 Flash to extract medical specialties and search intent
  * from raw user search strings (e.g., "child high fever").
@@ -50,7 +56,6 @@ async function handleAiSearchIntentRouter(context) {
             try {
                 body = JSON.parse(body);
             } catch (e) {
-                // String body but not JSON, treat as raw query
                 searchString = body;
             }
         }
@@ -58,8 +63,7 @@ async function handleAiSearchIntentRouter(context) {
             searchString = body.query || body.q || '';
         }
     }
-    
-    // Fallback to query parameters
+
     if (!searchString && context.req.query) {
         searchString = context.req.query.query || context.req.query.q || '';
     }
@@ -87,7 +91,7 @@ async function handleAiSearchIntentRouter(context) {
     try {
         // 3. Construct call to Google Gemini 2.5 Flash API
         const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`;
-        
+
         const systemPrompt = `Extract medical intent from the user query. Classify the major field strictly into one of: "physician", "dentist", "physiotherapy". Infer the most relevant medical specialty/sub-specialty, and extract list of symptoms.
 You MUST respond with a strict, valid JSON object following this schema exactly:
 {
@@ -135,8 +139,7 @@ Do not return any explanation or other text. Return ONLY the strict raw JSON obj
         }
 
         const data = await response.json();
-        
-        // Extract raw text content from Gemini output structure
+
         const candidates = data.candidates;
         if (!candidates || candidates.length === 0 || !candidates[0].content || !candidates[0].content.parts || candidates[0].content.parts.length === 0) {
             context.error("Invalid response payload from Gemini API: " + JSON.stringify(data));
@@ -149,7 +152,6 @@ Do not return any explanation or other text. Return ONLY the strict raw JSON obj
         const rawText = candidates[0].content.parts[0].text.trim();
         context.log(`Gemini raw response text: ${rawText}`);
 
-        // Parse extracted intent
         let intent;
         try {
             intent = robustJSONParse(rawText);
@@ -161,7 +163,6 @@ Do not return any explanation or other text. Return ONLY the strict raw JSON obj
             }, 502);
         }
 
-        // Return structured intent back to the client
         return context.res.json({
             success: true,
             query: searchString,
@@ -181,12 +182,6 @@ Do not return any explanation or other text. Return ONLY the strict raw JSON obj
     }
 }
 
-/**
- * Weekly Maintenance Job
- * Combines two maintenance jobs:
- * 1. AI Health Coach: Aggregates metrics & conditions, generates tips via Gemini, caches them.
- * 2. Internal Reputation Sync: Aggregates patient reviews, updates doctor ratings & search index.
- */
 async function handleWeeklyMaintenance(context) {
     // 1. Initialize Appwrite Client & Services
     const endpoint = process.env.APPWRITE_ENDPOINT || context.variables?.APPWRITE_ENDPOINT || 'https://cloud.appwrite.io/v1';

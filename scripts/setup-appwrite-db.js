@@ -48,10 +48,10 @@ async function run() {
             name: 'Patient Profiles',
             dls: true,
             permissions: [
-                sdk.Permission.create(sdk.Role.users()),
-                sdk.Permission.read(sdk.Role.users()),
-                sdk.Permission.update(sdk.Role.users()),
-                sdk.Permission.delete(sdk.Role.users())
+                // Only collection-level CREATE is allowed.
+                // READ/UPDATE/DELETE are enforced via Document-Level Security (DLS)
+                // so each document is accessible ONLY by its specific auth_id owner.
+                sdk.Permission.create(sdk.Role.users())
             ],
             attributes: [
                 { type: 'string', key: 'auth_id', size: 255, required: true },
@@ -71,12 +71,13 @@ async function run() {
         {
             id: 'Doctor_Profiles',
             name: 'Doctor Profiles',
-            dls: false,
+            dls: true,
             permissions: [
+                // PUBLIC read for discovery.
+                // CREATE allowed at collection level (any auth user can register as a doctor).
+                // UPDATE/DELETE are enforced via DLS so only the owner or admins can modify.
                 sdk.Permission.read(sdk.Role.any()),
-                sdk.Permission.create(sdk.Role.users()), // Authorized doctors can create profiles
-                sdk.Permission.update(sdk.Role.users()),
-                sdk.Permission.delete(sdk.Role.users())
+                sdk.Permission.create(sdk.Role.users())
             ],
             attributes: [
                 { type: 'string', key: 'auth_id', size: 255, required: true },
@@ -120,10 +121,10 @@ async function run() {
             name: 'Appointments',
             dls: true,
             permissions: [
-                sdk.Permission.create(sdk.Role.users()),
-                sdk.Permission.read(sdk.Role.users()),
-                sdk.Permission.update(sdk.Role.users()),
-                sdk.Permission.delete(sdk.Role.users())
+                // Only collection-level CREATE is allowed.
+                // READ/UPDATE/DELETE are enforced via DLS so only the involved
+                // patient (by auth_id) and doctor can access each appointment.
+                sdk.Permission.create(sdk.Role.users())
             ],
             attributes: [
                 { type: 'string', key: 'patient_profile_id', size: 255, required: true },
@@ -142,10 +143,9 @@ async function run() {
             name: 'Patient Conditions',
             dls: true,
             permissions: [
-                sdk.Permission.create(sdk.Role.users()),
-                sdk.Permission.read(sdk.Role.users()),
-                sdk.Permission.update(sdk.Role.users()),
-                sdk.Permission.delete(sdk.Role.users())
+                // Strict DLS: only CREATE at collection level.
+                // READ/UPDATE/DELETE enforced per-document by patient auth_id.
+                sdk.Permission.create(sdk.Role.users())
             ],
             attributes: [
                 { type: 'string', key: 'patient_profile_id', size: 255, required: true },
@@ -161,10 +161,9 @@ async function run() {
             name: 'Health Metrics',
             dls: true,
             permissions: [
-                sdk.Permission.create(sdk.Role.users()),
-                sdk.Permission.read(sdk.Role.users()),
-                sdk.Permission.update(sdk.Role.users()),
-                sdk.Permission.delete(sdk.Role.users())
+                // Strict DLS: only CREATE at collection level.
+                // READ/UPDATE/DELETE enforced per-document by patient auth_id.
+                sdk.Permission.create(sdk.Role.users())
             ],
             attributes: [
                 { type: 'string', key: 'patient_profile_id', size: 255, required: true },
@@ -183,8 +182,9 @@ async function run() {
             name: 'AI Insights Cache',
             dls: true,
             permissions: [
-                sdk.Permission.read(sdk.Role.users())
-                // Write access restricted to edge functions (admin key)
+                // NO collection-level permissions.
+                // READ is enforced per-document by patient auth_id via DLS.
+                // WRITE is restricted to server-side functions (admin API key).
             ],
             attributes: [
                 { type: 'string', key: 'patient_profile_id', size: 255, required: true },
@@ -220,10 +220,9 @@ async function run() {
             name: 'Vault Metadata',
             dls: true,
             permissions: [
-                sdk.Permission.create(sdk.Role.users()),
-                sdk.Permission.read(sdk.Role.users()),
-                sdk.Permission.update(sdk.Role.users()),
-                sdk.Permission.delete(sdk.Role.users())
+                // Strict DLS: only CREATE at collection level.
+                // READ/UPDATE/DELETE enforced per-document by patient auth_id.
+                sdk.Permission.create(sdk.Role.users())
             ],
             attributes: [
                 { type: 'string', key: 'patient_profile_id', size: 255, required: true },

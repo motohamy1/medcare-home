@@ -5,8 +5,11 @@
   "main": "index.js",
   "scripts": {
     "setup": "node scripts/setup-appwrite-db.js",
+    "setup:auth": "node scripts/setup-auth-rbac.js",
+    "setup:messaging": "node scripts/setup-messaging.js",
     "seed": "node scripts/seed-db.js",
-    "test:backend": "node scripts/test-backend.js"
+    "test:backend": "node scripts/test-backend.js",
+    "test:search": "node scripts/test-search-flow.js"
   },
   "dependencies": {
     "dotenv": "^16.4.5",

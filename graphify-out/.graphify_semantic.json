@@ -1,0 +1,819 @@
+{
+  "nodes": [
+    {
+      "id": "medcare_home",
+      "label": "Medical Care Hub & Personal Health Monitor",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "line 1"
+    },
+    {
+      "id": "appwrite_backend",
+      "label": "Appwrite Backend Infrastructure",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "line 3"
+    },
+    {
+      "id": "medical_hub_prod",
+      "label": "Medical_Hub_Prod Database",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "line 33"
+    },
+    {
+      "id": "patient_profiles",
+      "label": "Patient_Profiles Collection",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "line 94"
+    },
+    {
+      "id": "doctor_profiles",
+      "label": "Doctor_Profiles Collection",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "line 98"
+    },
+    {
+      "id": "schedule_slots",
+      "label": "Schedule_Slots Collection",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "line 102"
+    },
+    {
+      "id": "appointments",
+      "label": "Appointments Collection",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "line 105"
+    },
+    {
+      "id": "patient_conditions",
+      "label": "Patient_Conditions Collection",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "line 109"
+    },
+    {
+      "id": "health_metrics",
+      "label": "Health_Metrics Collection",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "line 113"
+    },
+    {
+      "id": "ai_insights_cache",
+      "label": "AI_Insights_Cache Collection",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "line 117"
+    },
+    {
+      "id": "patient_reviews",
+      "label": "Patient_Reviews Collection",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "line 121"
+    },
+    {
+      "id": "vault_metadata",
+      "label": "Vault_Metadata Collection",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "line 125"
+    },
+    {
+      "id": "medical_vault_bucket",
+      "label": "Medical_Vault Storage Bucket",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "line 36"
+    },
+    {
+      "id": "rbac_admins",
+      "label": "Admins Team",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "line 131"
+    },
+    {
+      "id": "rbac_doctors",
+      "label": "Doctors Team",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "line 133"
+    },
+    {
+      "id": "rbac_patients",
+      "label": "Patients Team",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "line 135"
+    },
+    {
+      "id": "document_level_security",
+      "label": "Document-Level Security (DLS)",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "line 88"
+    },
+    {
+      "id": "weekly_maintenance_cron",
+      "label": "Weekly Maintenance Cron Function",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "line 49"
+    },
+    {
+      "id": "ai_search_intent_router",
+      "label": "AI Search Intent Router",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "line 50"
+    },
+    {
+      "id": "ai_health_coach",
+      "label": "AI Health Coach",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "line 56"
+    },
+    {
+      "id": "internal_reputation_sync",
+      "label": "Internal Reputation Sync",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "line 55"
+    },
+    {
+      "id": "transactional_booking_engine",
+      "label": "Transactional Booking Engine Function",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "line 62"
+    },
+    {
+      "id": "setup_appwrite_db",
+      "label": "setup-appwrite-db.js",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "line 30"
+    },
+    {
+      "id": "setup_auth_rbac",
+      "label": "setup-auth-rbac.js",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "line 39"
+    },
+    {
+      "id": "setup_messaging",
+      "label": "setup-messaging.js",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "line 44"
+    },
+    {
+      "id": "seed_db",
+      "label": "seed-db.js",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "line 32"
+    },
+    {
+      "id": "test_backend",
+      "label": "test-backend.js",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "line 147"
+    },
+    {
+      "id": "test_search_flow",
+      "label": "test-search-flow.js",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "line 142"
+    },
+    {
+      "id": "google_gemini_25_flash",
+      "label": "Google Gemini 2.5 Flash",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "line 51"
+    },
+    {
+      "id": "resend_smtp",
+      "label": "Resend SMTP",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "line 45"
+    },
+    {
+      "id": "fcm_notifications",
+      "label": "FCM (Firebase Cloud Messaging)",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "line 46"
+    },
+    {
+      "id": "apns_notifications",
+      "label": "APNs (Apple Push Notification)",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "line 47"
+    },
+    {
+      "id": "composite_booking_lock",
+      "label": "Composite Booking Lock Pattern",
+      "file_type": "rationale",
+      "source_file": "README.md",
+      "source_location": "line 63"
+    },
+    {
+      "id": "rollback_mechanism",
+      "label": "Rollback Mechanism",
+      "file_type": "rationale",
+      "source_file": "README.md",
+      "source_location": "line 65"
+    },
+    {
+      "id": "node_appwrite_sdk",
+      "label": "node-appwrite SDK",
+      "file_type": "document",
+      "source_file": ".agents/skills/appwrite-typescript/SKILL.md",
+      "source_location": "line 14"
+    },
+    {
+      "id": "tablesdb_api",
+      "label": "TablesDB API",
+      "file_type": "document",
+      "source_file": ".agents/skills/appwrite-typescript/SKILL.md",
+      "source_location": "line 78"
+    },
+    {
+      "id": "appwrite_permissions_role",
+      "label": "Permission & Role System",
+      "file_type": "document",
+      "source_file": ".agents/skills/appwrite-typescript/SKILL.md",
+      "source_location": "section: Permissions & Roles"
+    },
+    {
+      "id": "ssr_auth_pattern",
+      "label": "SSR Authentication Pattern",
+      "file_type": "document",
+      "source_file": ".agents/skills/appwrite-typescript/SKILL.md",
+      "source_location": "section: Server-Side Rendering Authentication"
+    },
+    {
+      "id": "appwrite_cli_tool",
+      "label": "Appwrite CLI",
+      "file_type": "document",
+      "source_file": ".agents/skills/appwrite-cli/SKILL.md",
+      "source_location": "line 3"
+    },
+    {
+      "id": "appwrite_config_json",
+      "label": "appwrite.config.json",
+      "file_type": "document",
+      "source_file": ".agents/skills/appwrite-cli/SKILL.md",
+      "source_location": "section: appwrite.config.json"
+    },
+    {
+      "id": "appt_slot_id_lock",
+      "label": "appt_{slot_id} Lock ID Pattern",
+      "file_type": "rationale",
+      "source_file": "functions/transactional-booking-engine/src/main.js",
+      "source_location": "line 74"
+    },
+    {
+      "id": "gemini_response_mimetype",
+      "label": "Gemini responseMimeType JSON Mode",
+      "file_type": "rationale",
+      "source_file": "functions/weekly-maintenance-cron/src/main.js",
+      "source_location": "line 104"
+    },
+    {
+      "id": "robust_json_parse",
+      "label": "robustJSONParse Function",
+      "file_type": "code",
+      "source_file": "functions/weekly-maintenance-cron/src/main.js",
+      "source_location": "line 256"
+    },
+    {
+      "id": "search_index_generation",
+      "label": "Search Index Generation Logic",
+      "file_type": "code",
+      "source_file": "functions/weekly-maintenance-cron/src/main.js",
+      "source_location": "line 178"
+    },
+    {
+      "id": "permissions_patient_auth_id",
+      "label": "Permissions Using patientAuthId Pattern",
+      "file_type": "rationale",
+      "source_file": "functions/transactional-booking-engine/src/main.js",
+      "source_location": "line 107"
+    },
+    {
+      "id": "patient_identity_verification",
+      "label": "Patient Auth Identity Verification",
+      "file_type": "rationale",
+      "source_file": "functions/transactional-booking-engine/src/main.js",
+      "source_location": "line 87"
+    }
+  ],
+  "edges": [
+    {
+      "source": "medcare_home",
+      "target": "appwrite_backend",
+      "relation": "has_component",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md"
+    },
+    {
+      "source": "appwrite_backend",
+      "target": "medical_hub_prod",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md"
+    },
+    {
+      "source": "medical_hub_prod",
+      "target": "patient_profiles",
+      "relation": "contains_collection",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "setup-appwrite-db.js"
+    },
+    {
+      "source": "medical_hub_prod",
+      "target": "doctor_profiles",
+      "relation": "contains_collection",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "setup-appwrite-db.js"
+    },
+    {
+      "source": "medical_hub_prod",
+      "target": "schedule_slots",
+      "relation": "contains_collection",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "setup-appwrite-db.js"
+    },
+    {
+      "source": "medical_hub_prod",
+      "target": "appointments",
+      "relation": "contains_collection",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "setup-appwrite-db.js"
+    },
+    {
+      "source": "medical_hub_prod",
+      "target": "patient_conditions",
+      "relation": "contains_collection",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "setup-appwrite-db.js"
+    },
+    {
+      "source": "medical_hub_prod",
+      "target": "health_metrics",
+      "relation": "contains_collection",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "setup-appwrite-db.js"
+    },
+    {
+      "source": "medical_hub_prod",
+      "target": "ai_insights_cache",
+      "relation": "contains_collection",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "setup-appwrite-db.js"
+    },
+    {
+      "source": "medical_hub_prod",
+      "target": "patient_reviews",
+      "relation": "contains_collection",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "setup-appwrite-db.js"
+    },
+    {
+      "source": "medical_hub_prod",
+      "target": "vault_metadata",
+      "relation": "contains_collection",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "setup-appwrite-db.js"
+    },
+    {
+      "source": "medcare_home",
+      "target": "medical_vault_bucket",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "setup-appwrite-db.js"
+    },
+    {
+      "source": "medcare_home",
+      "target": "rbac_admins",
+      "relation": "has_team",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md"
+    },
+    {
+      "source": "medcare_home",
+      "target": "rbac_doctors",
+      "relation": "has_team",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md"
+    },
+    {
+      "source": "medcare_home",
+      "target": "rbac_patients",
+      "relation": "has_team",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md"
+    },
+    {
+      "source": "document_level_security",
+      "target": "patient_profiles",
+      "relation": "applies_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md"
+    },
+    {
+      "source": "document_level_security",
+      "target": "doctor_profiles",
+      "relation": "applies_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md"
+    },
+    {
+      "source": "document_level_security",
+      "target": "appointments",
+      "relation": "applies_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md"
+    },
+    {
+      "source": "medcare_home",
+      "target": "weekly_maintenance_cron",
+      "relation": "has_function",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "appwrite.json"
+    },
+    {
+      "source": "medcare_home",
+      "target": "transactional_booking_engine",
+      "relation": "has_function",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "appwrite.json"
+    },
+    {
+      "source": "weekly_maintenance_cron",
+      "target": "ai_search_intent_router",
+      "relation": "contains_feature",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md"
+    },
+    {
+      "source": "weekly_maintenance_cron",
+      "target": "ai_health_coach",
+      "relation": "contains_feature",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md"
+    },
+    {
+      "source": "weekly_maintenance_cron",
+      "target": "internal_reputation_sync",
+      "relation": "contains_feature",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md"
+    },
+    {
+      "source": "ai_search_intent_router",
+      "target": "google_gemini_25_flash",
+      "relation": "uses",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "functions/weekly-maintenance-cron/src/main.js"
+    },
+    {
+      "source": "ai_health_coach",
+      "target": "google_gemini_25_flash",
+      "relation": "uses",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "functions/weekly-maintenance-cron/src/main.js"
+    },
+    {
+      "source": "ai_search_intent_router",
+      "target": "gemini_response_mimetype",
+      "relation": "configures",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "functions/weekly-maintenance-cron/src/main.js"
+    },
+    {
+      "source": "ai_search_intent_router",
+      "target": "robust_json_parse",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "functions/weekly-maintenance-cron/src/main.js"
+    },
+    {
+      "source": "internal_reputation_sync",
+      "target": "search_index_generation",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "functions/weekly-maintenance-cron/src/main.js"
+    },
+    {
+      "source": "transactional_booking_engine",
+      "target": "composite_booking_lock",
+      "relation": "uses",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md"
+    },
+    {
+      "source": "transactional_booking_engine",
+      "target": "rollback_mechanism",
+      "relation": "uses",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md"
+    },
+    {
+      "source": "composite_booking_lock",
+      "target": "appt_slot_id_lock",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "functions/transactional-booking-engine/src/main.js"
+    },
+    {
+      "source": "transactional_booking_engine",
+      "target": "resend_smtp",
+      "relation": "sends_via",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md"
+    },
+    {
+      "source": "transactional_booking_engine",
+      "target": "permissions_patient_auth_id",
+      "relation": "enforces",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "functions/transactional-booking-engine/src/main.js"
+    },
+    {
+      "source": "permissions_patient_auth_id",
+      "target": "patient_identity_verification",
+      "relation": "depends_on",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "functions/transactional-booking-engine/src/main.js"
+    },
+    {
+      "source": "medcare_home",
+      "target": "resend_smtp",
+      "relation": "uses_messaging",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md"
+    },
+    {
+      "source": "medcare_home",
+      "target": "fcm_notifications",
+      "relation": "uses_messaging",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md"
+    },
+    {
+      "source": "medcare_home",
+      "target": "apns_notifications",
+      "relation": "uses_messaging",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md"
+    },
+    {
+      "source": "medcare_home",
+      "target": "setup_appwrite_db",
+      "relation": "has_script",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "package.json"
+    },
+    {
+      "source": "medcare_home",
+      "target": "setup_auth_rbac",
+      "relation": "has_script",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "package.json"
+    },
+    {
+      "source": "medcare_home",
+      "target": "setup_messaging",
+      "relation": "has_script",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "package.json"
+    },
+    {
+      "source": "medcare_home",
+      "target": "seed_db",
+      "relation": "has_script",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "package.json"
+    },
+    {
+      "source": "medcare_home",
+      "target": "test_backend",
+      "relation": "has_script",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "package.json"
+    },
+    {
+      "source": "medcare_home",
+      "target": "test_search_flow",
+      "relation": "has_script",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "package.json"
+    },
+    {
+      "source": "setup_appwrite_db",
+      "target": "node_appwrite_sdk",
+      "relation": "depends_on",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "scripts/setup-appwrite-db.js"
+    },
+    {
+      "source": "weekly_maintenance_cron",
+      "target": "node_appwrite_sdk",
+      "relation": "depends_on",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "functions/weekly-maintenance-cron/src/main.js"
+    },
+    {
+      "source": "transactional_booking_engine",
+      "target": "node_appwrite_sdk",
+      "relation": "depends_on",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "functions/transactional-booking-engine/src/main.js"
+    },
+    {
+      "source": "node_appwrite_sdk",
+      "target": "tablesdb_api",
+      "relation": "exports",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/appwrite-typescript/SKILL.md"
+    },
+    {
+      "source": "node_appwrite_sdk",
+      "target": "appwrite_permissions_role",
+      "relation": "provides",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/appwrite-typescript/SKILL.md"
+    },
+    {
+      "source": "node_appwrite_sdk",
+      "target": "ssr_auth_pattern",
+      "relation": "enables",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/appwrite-typescript/SKILL.md"
+    },
+    {
+      "source": "appwrite_cli_tool",
+      "target": "appwrite_config_json",
+      "relation": "manages",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/appwrite-cli/SKILL.md"
+    },
+    {
+      "source": "medcare_home",
+      "target": "appwrite_cli_tool",
+      "relation": "deployed_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "README.md"
+    },
+    {
+      "source": "appointments",
+      "target": "schedule_slots",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "functions/transactional-booking-engine/src/main.js"
+    },
+    {
+      "source": "patient_reviews",
+      "target": "doctor_profiles",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md"
+    },
+    {
+      "source": "health_metrics",
+      "target": "ai_insights_cache",
+      "relation": "feeds_into",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "functions/weekly-maintenance-cron/src/main.js"
+    },
+    {
+      "source": "patient_conditions",
+      "target": "ai_insights_cache",
+      "relation": "feeds_into",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "functions/weekly-maintenance-cron/src/main.js"
+    }
+  ],
+  "hyperedges": [
+    {
+      "id": "booking_flow",
+      "label": "Appointment Booking Flow",
+      "nodes": [
+        "transactional_booking_engine",
+        "appointments",
+        "schedule_slots",
+        "composite_booking_lock",
+        "rollback_mechanism",
+        "appt_slot_id_lock"
+      ],
+      "relation": "participate_in",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "functions/transactional-booking-engine/src/main.js"
+    },
+    {
+      "id": "ai_pipeline",
+      "label": "AI Search & Health Coach Pipeline",
+      "nodes": [
+        "weekly_maintenance_cron",
+        "ai_search_intent_router",
+        "ai_health_coach",
+        "google_gemini_25_flash",
+        "robust_json_parse",
+        "gemini_response_mimetype"
+      ],
+      "relation": "participate_in",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "functions/weekly-maintenance-cron/src/main.js"
+    },
+    {
+      "id": "notification_system",
+      "label": "Notification System",
+      "nodes": [
+        "transactional_booking_engine",
+        "resend_smtp",
+        "fcm_notifications",
+        "apns_notifications",
+        "setup_messaging"
+      ],
+      "relation": "participate_in",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md"
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}
