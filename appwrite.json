@@ -1,0 +1,33 @@
+{
+    "projectId": "medcarehome",
+    "projectName": "Medical Care Hub",
+    "endpoint": "https://fra.cloud.appwrite.io/v1",
+    "functions": [
+        {
+            "$id": "weekly-maintenance-cron",
+            "name": "Weekly Maintenance Cron",
+            "runtime": "node-18.0",
+            "execute": ["any"],
+            "events": [],
+            "schedule": "0 2 * * 0",
+            "timeout": 30,
+            "path": "functions/weekly-maintenance-cron",
+            "entrypoint": "src/main.js",
+            "commands": "npm install",
+            "ignore": ["node_modules", ".npm"]
+        },
+        {
+            "$id": "transactional-booking-engine",
+            "name": "Transactional Booking Engine",
+            "runtime": "node-18.0",
+            "execute": ["users"],
+            "events": [],
+            "schedule": "",
+            "timeout": 15,
+            "path": "functions/transactional-booking-engine",
+            "entrypoint": "src/main.js",
+            "commands": "npm install",
+            "ignore": ["node_modules", ".npm"]
+        }
+    ]
+}

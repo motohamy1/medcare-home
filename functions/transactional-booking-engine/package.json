@@ -1,0 +1,8 @@
+{
+  "name": "transactional-booking-engine",
+  "version": "1.0.0",
+  "description": "Appwrite function to handle transactional bookings with strict concurrency control",
+  "main": "src/main.js",
+  "dependencies": {},
+  "devDependencies": {}
+}

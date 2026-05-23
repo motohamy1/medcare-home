@@ -1,0 +1,45 @@
+total  2
+ 
+functions (2)
+  [1]
+    $id                        ai-health-coach-cron
+    name                       AI Health Coach Cron
+    enabled                    true
+    live                       true
+    logging                    true
+    runtime                    node-18.0
+    deploymentRetention        0
+    deploymentId               6a10f973da312de7683a
+    deploymentCreatedAt        2026-05-23T00:48:52.040+00:00
+    latestDeploymentId         6a10f973da312de7683a
+    latestDeploymentCreatedAt  2026-05-23T00:48:52.040+00:00
+    latestDeploymentStatus     ready
+    schedule                   0 2 * * 0
+    timeout                    30
+    entrypoint                 src/main.js
+    commands                   npm install
+    version                    v5
+    providerSilentMode         false
+    buildSpecification         s-0.5vcpu-512mb
+    runtimeSpecification       s-0.5vcpu-512mb
+
+  [2]
+    $id                        transactional-booking-engine
+    name                       Transactional Booking Engine
+    enabled                    true
+    live                       true
+    logging                    true
+    runtime                    node-18.0
+    deploymentRetention        0
+    deploymentId               6a10f973ea879613eda5
+    deploymentCreatedAt        2026-05-23T00:48:52.114+00:00
+    latestDeploymentId         6a10f973ea879613eda5
+    latestDeploymentCreatedAt  2026-05-23T00:48:52.114+00:00
+    latestDeploymentStatus     ready
+    timeout                    15
+    entrypoint                 src/main.js
+    commands                   npm install
+    version                    v5
+    providerSilentMode         false
+    buildSpecification         s-0.5vcpu-512mb
+    runtimeSpecification       s-0.5vcpu-512mb
