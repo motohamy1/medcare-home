@@ -1,0 +1,346 @@
+<!DOCTYPE html><html lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title class="">MedCareHome - Health Monitor</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet">
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "error-container": "#ffdad6",
+                      "outline": "#747a60",
+                      "on-surface": "#1b1b1b",
+                      "surface-container-lowest": "#ffffff",
+                      "on-primary-fixed": "#161e00",
+                      "secondary-container": "#fe00fe",
+                      "primary-fixed-dim": "#abd600",
+                      "surface-tint": "#506600",
+                      "error": "#ba1a1a",
+                      "primary": "#506600",
+                      "inverse-on-surface": "#f1f1f1",
+                      "on-secondary-fixed": "#380038",
+                      "surface-container": "#eeeeee",
+                      "secondary-fixed": "#ffd7f5",
+                      "on-tertiary-container": "#007777",
+                      "on-primary-fixed-variant": "#3c4d00",
+                      "primary-fixed": "#c3f400",
+                      "on-surface-variant": "#444933",
+                      "on-secondary-container": "#500050",
+                      "primary-container": "#ccff00",
+                      "on-secondary": "#ffffff",
+                      "on-primary": "#ffffff",
+                      "on-tertiary": "#ffffff",
+                      "secondary-fixed-dim": "#ffabf3",
+                      "surface-bright": "#f9f9f9",
+                      "inverse-primary": "#abd600",
+                      "surface-container-highest": "#e2e2e2",
+                      "on-secondary-fixed-variant": "#810081",
+                      "tertiary": "#006a6a",
+                      "surface-container-low": "#f3f3f3",
+                      "tertiary-fixed-dim": "#00dddd",
+                      "surface-dim": "#dadada",
+                      "surface": "#f9f9f9",
+                      "on-tertiary-fixed-variant": "#004f4f",
+                      "on-error": "#ffffff",
+                      "background": "#f9f9f9",
+                      "outline-variant": "#c4c9ac",
+                      "tertiary-container": "#8dfffe",
+                      "surface-container-high": "#e8e8e8",
+                      "inverse-surface": "#303030",
+                      "surface-variant": "#e2e2e2",
+                      "secondary": "#a900a9",
+                      "on-background": "#1b1b1b",
+                      "on-primary-container": "#5b7300",
+                      "tertiary-fixed": "#00fbfb",
+                      "on-error-container": "#93000a",
+                      "on-tertiary-fixed": "#002020"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "gutter": "16px",
+                      "container-gap": "20px",
+                      "margin-mobile": "16px",
+                      "margin-desktop": "32px",
+                      "unit": "4px"
+              },
+              "fontFamily": {
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "label-sm": [
+                              "Space Grotesk"
+                      ],
+                      "headline-lg-mobile": [
+                              "Space Grotesk"
+                      ],
+                      "display-lg": [
+                              "Space Grotesk"
+                      ],
+                      "headline-lg": [
+                              "Space Grotesk"
+                      ],
+                      "headline-md": [
+                              "Space Grotesk"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "label-md": [
+                              "Space Grotesk"
+                      ]
+              },
+              "fontSize": {
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "28px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "1.1",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1, 'wght' 700, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface font-body-md antialiased pb-24 md:pb-0">
+<!-- TopAppBar -->
+<header class="flex justify-between items-center w-full px-margin-mobile py-4 sticky top-0 z-50 border-b-4 border-on-surface bg-surface shadow-[0px_4px_0px_0px_rgba(0,0,0,1)]">
+<div class="flex items-center gap-4">
+<button class="text-primary p-2 hover:bg-primary-container transition-transform active:translate-y-1 active:shadow-none rounded-DEFAULT border-2 border-transparent hover:border-on-surface">
+<span class="material-symbols-outlined text-2xl">menu</span>
+</button>
+<h1 class="font-display-lg text-2xl md:text-3xl font-black text-on-primary-fixed border-4 border-on-surface bg-primary-container px-3 py-0.5 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] tracking-tighter uppercase leading-none">MEDCAREHOME</h1>
+</div>
+<div>
+<div class="w-10 h-10 rounded-full border-2 border-on-surface shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] bg-surface-container-highest overflow-hidden">
+<img alt="User profile photo" class="w-full h-full object-cover" data-alt="A close-up studio portrait of a young person with clear skin, looking directly at the camera with a neutral expression. The lighting is high-key and bright, creating a sharp, modern pop-art aesthetic. The background is a solid, vibrant lime green color, matching the VitaPop brand palette." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBXcx_lwKAGqetvlE_W4cnvqmsxH7Dsfkswr63CBxqPA-8FnIZ5B2ueHRdv6-VNs0SsYkpSYIZ4vPpLkPk52Jj0E76gBljSjoKcbj_XU-W6SVG6DK3ACH2zFkTPvb0hHxosWrD_ZKXIMaeSULLgesyv6rxuk01gTZP8Pts1QcTGkg5eayh0wU6d2UDyqrINWEA_JFd5ZoVF08QNCHjCHlfIzSqVdJ-JNwibuOGiEp2zkyj2Z1gTH4hCngVAHGTSYZ8CgKDb7c0sfw">
+</div>
+</div>
+</header>
+<!-- Main Canvas: Bento Grid -->
+<main class="px-margin-mobile py-6 grid grid-cols-4 md:grid-cols-12 gap-container-gap max-w-7xl mx-auto">
+<!-- Widget 1: Current Health Status -->
+<section class="col-span-4 md:col-span-8 border-2 border-on-surface shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-primary-container rounded-lg p-5 flex flex-col gap-4">
+<div class="flex justify-between items-start">
+<h2 class="font-headline-md text-headline-md text-on-surface uppercase tracking-tight">Current Health Status</h2>
+<span class="bg-surface border-2 border-on-surface rounded-full px-3 py-1 font-label-sm text-label-sm uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">Stable</span>
+</div>
+<div class="grid grid-cols-2 gap-4 mt-2">
+<!-- Vitals Block 1 -->
+<div class="bg-surface-container-lowest border-2 border-on-surface p-4 rounded-DEFAULT shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] flex flex-col">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-secondary">favorite</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Heart Rate</span>
+</div>
+<div class="flex items-baseline gap-1">
+<span class="font-display-lg text-display-lg font-black text-on-surface">72</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">BPM</span>
+</div>
+<!-- Faux Sparkline -->
+<div class="h-8 mt-2 w-full flex items-end gap-1">
+<div class="w-1/6 bg-on-surface h-1/2"></div>
+<div class="w-1/6 bg-on-surface h-3/4"></div>
+<div class="w-1/6 bg-on-surface h-full"></div>
+<div class="w-1/6 bg-on-surface h-1/4"></div>
+<div class="w-1/6 bg-on-surface h-2/3"></div>
+<div class="w-1/6 bg-primary h-1/2"></div>
+</div>
+</div>
+<!-- Vitals Block 2 -->
+<div class="bg-surface-container-lowest border-2 border-on-surface p-4 rounded-DEFAULT shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] flex flex-col">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-tertiary">bloodtype</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Blood Press.</span>
+</div>
+<div class="flex items-baseline gap-1">
+<span class="font-headline-lg text-headline-lg font-black text-on-surface tracking-tighter">118<span class="text-on-surface-variant text-headline-md">/75</span></span>
+</div>
+<div class="mt-auto flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-primary-container border border-on-surface"></div>
+<span class="font-label-sm text-label-sm uppercase">Optimal</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Widget 2: Daily AI Health Tip -->
+<section class="col-span-4 md:col-span-4 border-2 border-on-surface shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-tertiary-container rounded-lg p-5 flex flex-col justify-between">
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-3xl">smart_toy</span>
+<h2 class="font-headline-md text-headline-md uppercase tracking-tight">Daily AI Health Tip</h2>
+</div>
+<p class="font-body-lg text-body-lg font-medium leading-tight mb-4">
+                Your sleep data suggests a mild deficit. Try a 20-minute power nap between 1 PM and 3 PM today to boost cognitive function.
+            </p>
+<button class="w-full bg-surface-container-lowest border-2 border-on-surface py-2 font-label-md text-label-md uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:bg-surface-variant active:translate-y-1 active:translate-x-1 active:shadow-none transition-all">
+                Acknowledge
+            </button>
+</section>
+<!-- Widget 3: Pending Investigations -->
+<section class="col-span-4 md:col-span-6 border-2 border-on-surface shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-surface rounded-lg p-5">
+<h2 class="font-headline-md text-headline-md uppercase tracking-tight mb-4">Pending Investigations</h2>
+<ul class="flex flex-col gap-3">
+<li class="flex items-center gap-3 p-3 border-2 border-on-surface bg-surface-container-lowest rounded-DEFAULT shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+<div class="w-6 h-6 border-2 border-on-surface flex items-center justify-center bg-surface cursor-pointer hover:bg-primary-container transition-colors"></div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md uppercase">Complete Blood Count (CBC)</span>
+<span class="font-body-md text-body-md text-on-surface-variant text-sm">Due: Oct 24, Quest Diagnostics</span>
+</div>
+</li>
+<li class="flex items-center gap-3 p-3 border-2 border-on-surface bg-primary-container rounded-DEFAULT shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+<div class="w-6 h-6 border-2 border-on-surface flex items-center justify-center bg-surface-container-lowest cursor-pointer">
+<span class="material-symbols-outlined text-sm font-black">check</span>
+</div>
+<div class="flex flex-col line-through opacity-70">
+<span class="font-label-md text-label-md uppercase">Lipid Panel</span>
+<span class="font-body-md text-body-md text-sm">Completed: Oct 20</span>
+</div>
+</li>
+</ul>
+</section>
+<!-- Widget 4: Vitapop AI Suggestions -->
+<section class="col-span-4 md:col-span-6 border-2 border-on-surface shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-secondary-container text-on-secondary-container rounded-lg p-5 flex flex-col">
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-3xl">electric_bolt</span>
+<h2 class="font-headline-md text-headline-md uppercase tracking-tight text-on-surface">MedCareHome AI Suggestions</h2>
+</div>
+<div class="flex-grow flex flex-col gap-3">
+<div class="bg-surface-container-lowest border-2 border-on-surface p-3 rounded-DEFAULT shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] flex items-start gap-3">
+<span class="material-symbols-outlined text-primary mt-1">water_drop</span>
+<div>
+<h3 class="font-label-md text-label-md uppercase text-on-surface">Hydration Alert</h3>
+<p class="font-body-md text-body-md text-on-surface text-sm">Based on activity, drink 16oz of water now.</p>
+</div>
+</div>
+<div class="bg-surface-container-lowest border-2 border-on-surface p-3 rounded-DEFAULT shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] flex items-start gap-3">
+<span class="material-symbols-outlined text-secondary mt-1">directions_run</span>
+<div>
+<h3 class="font-label-md text-label-md uppercase text-on-surface">Activity Gap</h3>
+<p class="font-body-md text-body-md text-on-surface text-sm">You are 2,000 steps behind your Tuesday average.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Widget 5: Medical History Timeline -->
+<section class="col-span-4 md:col-span-12 border-2 border-on-surface shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-surface-container rounded-lg p-5">
+<h2 class="font-headline-md text-headline-md uppercase tracking-tight mb-6">Medical History</h2>
+<div class="relative pl-6 border-l-4 border-on-surface flex flex-col gap-6">
+<!-- Timeline Item 1 -->
+<div class="relative">
+<div class="absolute -left-[35px] top-1 w-5 h-5 bg-tertiary-container border-2 border-on-surface rounded-full shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"></div>
+<span class="font-label-sm text-label-sm text-on-surface-variant block mb-1">SEP 12, 2023</span>
+<div class="bg-surface-container-lowest border-2 border-on-surface p-3 rounded-DEFAULT shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] inline-block">
+<span class="font-label-md text-label-md uppercase block">Annual Physical</span>
+<span class="font-body-md text-body-md text-sm block">Dr. Sarah Jenkins - All clear.</span>
+</div>
+</div>
+<!-- Timeline Item 2 -->
+<div class="relative">
+<div class="absolute -left-[35px] top-1 w-5 h-5 bg-surface-container-lowest border-2 border-on-surface rounded-full shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"></div>
+<span class="font-label-sm text-label-sm text-on-surface-variant block mb-1">JUL 04, 2023</span>
+<div class="bg-surface-container-lowest border-2 border-on-surface p-3 rounded-DEFAULT shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] inline-block">
+<span class="font-label-md text-label-md uppercase block">Prescription Update</span>
+<span class="font-body-md text-body-md text-sm block">Lisinopril 10mg refilled.</span>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center bg-surface px-4 py-3 pb-safe border-t-4 border-on-surface shadow-[0px_-4px_0px_0px_rgba(0,0,0,1)] md:hidden">
+<!-- HOME (Inactive) -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-all scale-95 active:scale-90 w-16" href="#">
+<span class="material-symbols-outlined text-2xl mb-1">search</span>
+<span class="font-label-sm text-label-sm">HOME</span>
+</a>
+<!-- VITAL (Active) -->
+<a class="flex flex-col items-center justify-center bg-primary text-on-primary border-2 border-on-surface shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] px-4 py-1 hover:text-primary transition-all scale-95 active:scale-90" href="#">
+<span class="material-symbols-outlined text-2xl mb-1">monitoring</span>
+<span class="font-label-sm text-label-sm">VITAL</span>
+</a>
+<!-- ME (Inactive) -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-all scale-95 active:scale-90 w-16" href="#">
+<span class="material-symbols-outlined text-2xl mb-1">person</span>
+<span class="font-label-sm text-label-sm">ME</span>
+</a>
+</nav>
+
+
+</body></html>

@@ -1,9 +1,82 @@
-:root {
-  --font-display:
-    Spline Sans, Inter, ui-sans-serif, system-ui, sans-serif, Apple Color Emoji, Segoe UI Emoji,
-    Segoe UI Symbol, Noto Color Emoji;
-  --font-mono:
-    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;
-  --font-rounded: 'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif;
-  --font-serif: Georgia, 'Times New Roman', serif;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/preflight.css" layer(base);
+@import "tailwindcss/utilities.css";
+
+/* Platform-specific font families */
+@media android {
+  :root {
+    --font-mono: monospace;
+    --font-rounded: normal;
+    --font-serif: serif;
+    --font-sans: normal;
+  }
+}
+
+@media ios {
+  :root {
+    --font-mono: ui-monospace;
+    --font-serif: ui-serif;
+    --font-sans: system-ui;
+    --font-rounded: ui-rounded;
+  }
+}
+
+/* Neo-Brutalism Theme Tokens (VitaPop Core) */
+@layer theme {
+  @theme {
+    --color-background: #f9f9f9;
+    --color-on-background: #1b1b1b;
+    --color-surface: #f9f9f9;
+    --color-on-surface: #1b1b1b;
+    --color-surface-variant: #e2e2e2;
+    --color-on-surface-variant: #444933;
+    --color-surface-container: #eeeeee;
+    --color-surface-container-highest: #e2e2e2;
+    --color-surface-container-lowest: #ffffff;
+    --color-inverse-surface: #303030;
+    
+    --color-primary: #506600;
+    --color-on-primary: #ffffff;
+    --color-primary-container: #ccff00;
+    --color-on-primary-container: #5b7300;
+    
+    --color-secondary: #a900a9;
+    --color-on-secondary: #ffffff;
+    --color-secondary-container: #fe00fe;
+    --color-on-secondary-container: #500050;
+    
+    --color-tertiary: #006a6a;
+    --color-on-tertiary: #ffffff;
+    --color-tertiary-container: #8dfffe;
+    --color-on-tertiary-container: #007777;
+
+    --color-error: #ba1a1a;
+    --color-on-error: #ffffff;
+    --color-error-container: #ffdad6;
+    --color-on-error-container: #93000a;
+    
+    --color-outline: #747a60;
+    --color-outline-variant: #c4c9ac;
+
+    /* Spacing mapped to design */
+    --spacing-margin-mobile: 16px;
+    --spacing-container-gap: 20px;
+  }
+}
+
+/* Custom Brutal Utilities */
+@layer utilities {
+  .brutal-border {
+    border-width: 3px;
+    border-style: solid;
+    border-color: #000000;
+  }
+
+  .brutal-shadow {
+    box-shadow: 4px 4px 0px #000000;
+  }
+
+  .brutal-shadow-lg {
+    box-shadow: 8px 8px 0px #000000;
+  }
 }
