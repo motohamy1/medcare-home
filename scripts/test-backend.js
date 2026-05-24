@@ -117,6 +117,25 @@ async function run() {
         return;
     }
 
+    // PRE-CONCURRENCY ATTACK CLEANUP:
+    if (availableSlotId) {
+        console.log(`   🧹 Pre-test cleanup: resetting slot ${availableSlotId} and clearing any appointments...`);
+        try {
+            await databases.deleteDocument(databaseId, 'Appointments', `appt_${availableSlotId}`);
+            console.log(`      • Deleted existing appointment document appt_${availableSlotId}`);
+        } catch (err) {
+            // Document might not exist, ignore
+        }
+        try {
+            await databases.updateDocument(databaseId, 'Schedule_Slots', availableSlotId, {
+                status: 'AVAILABLE'
+            });
+            console.log(`      • Reset slot status to AVAILABLE`);
+        } catch (err) {
+            console.warn(`      • Slot reset status warning: ${err.message}`);
+        }
+    }
+
     console.log(`\n🔥 Initiating concurrency attack: Spawning 5 parallel booking threads targeting slot ${availableSlotId}...`);
 
     const bookingPayloads = [

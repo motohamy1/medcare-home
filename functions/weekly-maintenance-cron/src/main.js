@@ -92,14 +92,34 @@ async function handleAiSearchIntentRouter(context) {
         // 3. Construct call to Google Gemini 2.5 Flash API
         const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`;
 
-        const systemPrompt = `Extract medical intent from the user query. Classify the major field strictly into one of: "physician", "dentist", "physiotherapy". Infer the most relevant medical specialty/sub-specialty, and extract list of symptoms.
-You MUST respond with a strict, valid JSON object following this schema exactly:
+        const systemPrompt = `You are a medical search intent parser for a doctor booking app. Extract structured intent from the user's raw search query.
+
+Rules:
+1. The user may search by: doctor NAME (e.g. "dr ahmed"), SPECIALTY (e.g. "cardiologist"), SYMPTOMS (e.g. "chest pain"), or LOCATION (e.g. "nasr city").
+2. Classify major_field strictly into one of: "physician", "dentist", "physiotherapy".
+3. Map common symptoms to specialties:
+   - chest pain, shortness of breath, palpitations → cardiology
+   - back pain, joint pain, fracture, sprain → orthopedics
+   - fever, cough, cold, flu → general/internal medicine (or pediatrics if child-related)
+   - toothache, cavity, bleeding gums → dentist
+   - skin rash, acne, eczema → dermatology
+   - stomach pain, nausea, vomiting → gastroenterology
+   - headache, migraine, dizziness → neurology
+   - pregnancy, irregular periods → gynecology
+   - child fever, child cough, baby checkup → pediatrics
+   - muscle strain, rehabilitation, sports injury → physiotherapy
+4. If a specific doctor name is mentioned (contains "dr", "doctor", or appears to be a person's name), extract it.
+5. Extract 1-5 relevant keywords from the query for fallback text search.
+
+You MUST respond with a strict, valid JSON object exactly matching this schema:
 {
   "major_field": "physician" | "dentist" | "physiotherapy",
-  "specialty": "pediatrics" | "orthopedics" | "cardiology" | etc (infer the sub-specialty or general field),
-  "symptoms": ["list", "of", "extracted", "symptoms"]
+  "specialty": "pediatrics" | "orthopedics" | "cardiology" | "dermatology" | "gastroenterology" | "neurology" | "gynecology" | "general" | "internal medicine" | etc (best match),
+  "symptoms": ["list", "of", "extracted", "symptoms"],
+  "doctor_name": "extracted name or null",
+  "keywords": ["important", "search", "terms"]
 }
-Do not return any explanation or other text. Return ONLY the strict raw JSON object.`;
+Do not return any explanation, markdown, or other text. Return ONLY the strict raw JSON object.`;
 
         const requestBody = {
             contents: [
@@ -120,47 +140,60 @@ Do not return any explanation or other text. Return ONLY the strict raw JSON obj
             }
         };
 
-        context.log("Sending request to Google Gemini 2.5 Flash API...");
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(requestBody)
-        });
+        let response;
+        let useFallback = false;
+        let rawText = "";
 
-        if (!response.ok) {
-            const errorText = await response.text();
-            context.error(`Gemini API responded with status ${response.status}: ${errorText}`);
-            return context.res.json({
-                success: false,
-                error: `Gemini API error (Status ${response.status})`
-            }, 502);
+        try {
+            context.log("Sending request to Google Gemini 2.5 Flash API...");
+            response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestBody)
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                context.error(`Gemini API responded with status ${response.status}: ${errorText}`);
+                if (response.status === 429 || response.status === 403 || response.status === 401) {
+                    context.log("⚠️ Quota or Authentication error on Gemini. Falling back to local heuristic intent parser...");
+                    useFallback = true;
+                } else {
+                    return context.res.json({
+                        success: false,
+                        error: `Gemini API error (Status ${response.status})`
+                    }, 502);
+                }
+            } else {
+                const data = await response.json();
+                const candidates = data.candidates;
+                if (!candidates || candidates.length === 0 || !candidates[0].content || !candidates[0].content.parts || candidates[0].content.parts.length === 0) {
+                    context.error("Invalid response payload from Gemini API: " + JSON.stringify(data));
+                    useFallback = true;
+                } else {
+                    rawText = candidates[0].content.parts[0].text.trim();
+                    context.log(`Gemini raw response text: ${rawText}`);
+                }
+            }
+        } catch (fetchErr) {
+            context.error(`Network/Fetch error calling Gemini API: ${fetchErr.message}`);
+            useFallback = true;
         }
-
-        const data = await response.json();
-
-        const candidates = data.candidates;
-        if (!candidates || candidates.length === 0 || !candidates[0].content || !candidates[0].content.parts || candidates[0].content.parts.length === 0) {
-            context.error("Invalid response payload from Gemini API: " + JSON.stringify(data));
-            return context.res.json({
-                success: false,
-                error: "Gemini did not return any candidates."
-            }, 502);
-        }
-
-        const rawText = candidates[0].content.parts[0].text.trim();
-        context.log(`Gemini raw response text: ${rawText}`);
 
         let intent;
-        try {
-            intent = robustJSONParse(rawText);
-        } catch (parseError) {
-            context.error("Failed to parse Gemini output as JSON: " + rawText);
-            return context.res.json({
-                success: false,
-                error: "Failed to parse model output. Raw text was: " + rawText
-            }, 502);
+        if (useFallback) {
+            intent = fallbackIntentHeuristics(searchString);
+            context.log(`Using Heuristic Fallback Intent: ${JSON.stringify(intent)}`);
+        } else {
+            try {
+                intent = robustJSONParse(rawText);
+            } catch (parseError) {
+                context.error("Failed to parse Gemini output as JSON: " + rawText);
+                intent = fallbackIntentHeuristics(searchString);
+                context.log(`Fallback Heuristic triggered due to parse failure: ${JSON.stringify(intent)}`);
+            }
         }
 
         return context.res.json({
@@ -169,7 +202,9 @@ Do not return any explanation or other text. Return ONLY the strict raw JSON obj
             intent: {
                 major_field: intent.major_field || "physician",
                 specialty: intent.specialty || "general",
-                symptoms: intent.symptoms || []
+                symptoms: Array.isArray(intent.symptoms) ? intent.symptoms : [],
+                doctor_name: intent.doctor_name || null,
+                keywords: Array.isArray(intent.keywords) ? intent.keywords : []
             }
         }, 200);
 
@@ -296,24 +331,33 @@ async function handleWeeklyMaintenance(context) {
                         const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`;
                         const systemPrompt = `You are a preventative health coach. Analyze the user's anonymized biometrics log and active conditions. Do not diagnose, prescribe, or provide diagnostic claims. Based on these raw biometrics, return exactly 3 actionable lifestyle, nutritional, or activity tips. You MUST respond with a strict, valid JSON array containing exactly 3 objects: [ { "type": "action" | "avoid", "title": "Short title of the tip", "description": "Elaborate actionable advice in simple terms." } ]`;
 
-                        const response = await fetch(geminiUrl, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                contents: [{ parts: [{ text: `Patient Biometrics & Conditions: ${JSON.stringify(modelInput)}` }] }],
-                                generationConfig: { responseMimeType: "application/json", temperature: 0.2 },
-                                systemInstruction: { parts: [{ text: systemPrompt }] }
-                            })
-                        });
+                        let tips;
+                        try {
+                            const response = await fetch(geminiUrl, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    contents: [{ parts: [{ text: `Patient Biometrics & Conditions: ${JSON.stringify(modelInput)}` }] }],
+                                    generationConfig: { responseMimeType: "application/json", temperature: 0.2 },
+                                    systemInstruction: { parts: [{ text: systemPrompt }] }
+                                })
+                            });
 
-                        if (!response.ok) throw new Error(`Gemini responded with status ${response.status}`);
-                        const resJson = await response.json();
-                        const rawText = resJson.candidates[0].content.parts[0].text.trim();
-                        
-                        // Parse robustly and then format as clean serialized JSON
-                        const parsedInsights = robustJSONParse(rawText);
-                        const cleanContentJson = JSON.stringify(parsedInsights);
-                        
+                            if (!response.ok) {
+                                const errText = await response.text();
+                                throw new Error(`Gemini responded with status ${response.status}: ${errText}`);
+                            }
+                            const resJson = await response.json();
+                            const rawText = resJson.candidates[0].content.parts[0].text.trim();
+                            
+                            // Parse robustly and then format as clean serialized JSON
+                            tips = robustJSONParse(rawText);
+                        } catch (gemError) {
+                            context.error(`Failed to process AI health coach insights for patient ${patientId}: ${gemError.message}. Generating clinical fallback insights...`);
+                            tips = fallbackHealthCoachInsights(modelInput);
+                        }
+
+                        const cleanContentJson = JSON.stringify(tips);
                         const cacheDocId = `insight_${patientId}`;
                         const cacheData = { patient_profile_id: patientId, generated_at: new Date().toISOString(), content_json: cleanContentJson };
                         const permissions = [sdk.Permission.read(sdk.Role.user(patientId))];
@@ -325,8 +369,8 @@ async function handleWeeklyMaintenance(context) {
                                 await databases.createDocument(databaseId, 'AI_Insights_Cache', cacheDocId, cacheData, permissions);
                             } else throw updateErr;
                         }
-                    } catch (gemError) {
-                        context.error(`Failed to process AI health coach insights for patient ${patientId}: ${gemError.message}`);
+                    } catch (patientError) {
+                        context.error(`Failed to completely process patient ${patientId}: ${patientError.message}`);
                         hasErrors = true;
                     }
                 }
@@ -461,4 +505,146 @@ function parseFlatJSONString(str) {
     }
 
     return result;
+}
+
+/**
+ * Heuristic/Regex fallback parser for medical search queries when Gemini is rate-limited.
+ */
+function fallbackIntentHeuristics(searchString) {
+    const query = (searchString || "").toLowerCase();
+    
+    const result = {
+        major_field: "physician",
+        specialty: "general",
+        symptoms: [],
+        doctor_name: null,
+        keywords: []
+    };
+
+    // Arabic and English symptoms
+    if (query.includes("fever") || query.includes("حرارة") || query.includes("سخونية")) {
+        result.symptoms.push("fever");
+    }
+    if (query.includes("pain") || query.includes("وجع") || query.includes("ألم") || query.includes("بتوجعني")) {
+        result.symptoms.push("pain");
+    }
+    if (query.includes("throwing up") || query.includes("vomit") || query.includes("ترجيع") || query.includes("ورم")) {
+        result.symptoms.push("vomiting");
+    }
+    if (query.includes("gum") || query.includes("لثة") || query.includes("ورم")) {
+        result.symptoms.push("gum swelling");
+    }
+
+    // Heuristics for Field / Specialty mapping
+    if (query.includes("dent") || query.includes("tooth") || query.includes("teeth") || 
+        query.includes("أسنان") || query.includes("سن") || query.includes("ضرسي") || query.includes("اللثة") || query.includes("لثة")) {
+        result.major_field = "dentist";
+        result.specialty = "dentistry";
+        result.keywords = ["dentist", "dental", "teeth"];
+    } else if (query.includes("child") || query.includes("pediatric") || query.includes("baby") || 
+               query.includes("طفل") || query.includes("أطفال")) {
+        result.major_field = "physician";
+        result.specialty = "pediatrics";
+        result.keywords = ["pediatrician", "child", "pediatrics"];
+    } else if (query.includes("heart") || query.includes("chest") || query.includes("cardio") || 
+               query.includes("قلب") || query.includes("صدر")) {
+        result.major_field = "physician";
+        result.specialty = "cardiology";
+        result.keywords = ["cardiologist", "heart", "cardiology"];
+    } else if (query.includes("bone") || query.includes("back") || query.includes("ortho") || 
+               query.includes("عظام") || query.includes("ظهر") || query.includes("مفصل")) {
+        result.major_field = "physician";
+        result.specialty = "orthopedics";
+        result.keywords = ["orthopedic", "bones", "orthopedics"];
+    } else if (query.includes("therapy") || query.includes("rehab") || query.includes("physio") || 
+               query.includes("علاج طبيعي") || query.includes("مساج")) {
+        result.major_field = "physiotherapy";
+        result.specialty = "physiotherapy";
+        result.keywords = ["physiotherapist", "physiotherapy", "rehabilitation"];
+    } else if (query.includes("skin") || query.includes("rash") || query.includes("derma") || 
+               query.includes("جلدية") || query.includes("بشرة")) {
+        result.major_field = "physician";
+        result.specialty = "dermatology";
+        result.keywords = ["dermatologist", "skin", "dermatology"];
+    } else {
+        result.keywords = query.split(/\s+/).filter(w => w.length > 3).slice(0, 3);
+    }
+
+    const docMatch = query.match(/(?:dr|doctor|دكتور|طبيب)\s+([a-zA-Zأ-ي]+)/i);
+    if (docMatch) {
+        result.doctor_name = docMatch[1];
+    }
+
+    return result;
+}
+
+/**
+ * Custom clinical preventatives fallback when AI Health Coach is rate-limited.
+ */
+function fallbackHealthCoachInsights(modelInput) {
+    const conditions = modelInput.active_conditions || [];
+    const tips = [];
+
+    const hasHypertension = conditions.some(c => c.toLowerCase().includes("hyper") || c.toLowerCase().includes("tension") || c.toLowerCase().includes("blood pressure"));
+    const hasDiabetes = conditions.some(c => c.toLowerCase().includes("diabet") || c.toLowerCase().includes("sugar"));
+
+    if (hasHypertension) {
+        tips.push({
+            type: "action",
+            title: "Reduce Sodium & Monitor Blood Pressure",
+            description: "Keep your daily sodium intake below 1,500mg. Measure and log your blood pressure twice daily (morning and evening)."
+        });
+        tips.push({
+            type: "action",
+            title: "Daily 30-Minute Aerobic Walk",
+            description: "Engage in moderate-intensity aerobic exercise, such as brisk walking, to help naturally lower systemic vascular resistance."
+        });
+        tips.push({
+            type: "avoid",
+            title: "Avoid High-Stress & Processed Foods",
+            description: "Avoid highly processed meals, canned soups, and excessive caffeine which can trigger sudden blood pressure spikes."
+        });
+    } else if (hasDiabetes) {
+        tips.push({
+            type: "action",
+            title: "Carbohydrate Portion Management",
+            description: "Focus on complex carbohydrates with a low glycemic index (e.g., oats, quinoa) and spread your intake evenly throughout the day."
+        });
+        tips.push({
+            type: "action",
+            title: "Post-Meal Active Walks",
+            description: "Take a light 10-15 minute walk within 30 minutes after completing your main meals to enhance insulin sensitivity."
+        });
+        tips.push({
+            type: "avoid",
+            title: "Avoid Refined Sugars & Empty Carbs",
+            description: "Steer clear of sweetened beverages, white bread, and refined pastry products that cause rapid blood glucose fluctuations."
+        });
+    } else {
+        tips.push({
+            type: "action",
+            title: "Hydration Optimization",
+            description: "Aim to consume at least 2.5 to 3 liters of pure water daily to facilitate metabolic clearance and cellular function."
+        });
+        tips.push({
+            type: "action",
+            title: "Consistent Sleep Hygiene",
+            description: "Align with your circadian rhythm by securing 7-8 hours of uninterrupted rest, retiring and waking at consistent times."
+        });
+        tips.push({
+            type: "avoid",
+            title: "Avoid Late-Night Heavy Meals",
+            description: "Avoid consuming calorie-dense or heavily seasoned food within 3 hours of sleep to optimize sleep architecture and digestion."
+        });
+    }
+
+    while (tips.length < 3) {
+        tips.push({
+            type: "action",
+            title: "Routine Stretching & Mobility",
+            description: "Incorporate 10 minutes of active stretching into your morning routine to enhance blood flow and joint mobility."
+        });
+    }
+
+    return tips.slice(0, 3);
 }

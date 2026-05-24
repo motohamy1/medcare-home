@@ -1,11 +1,65 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, ScrollView, Pressable, Image, TextInput } from '@/tw';
 import { TopAppBar } from '@/components/TopAppBar';
 import { BottomNavBar } from '@/components/BottomNavBar';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
+import { useAuth } from '@/contexts/AuthContext';
+import { getSuggestedDoctors, getDoctorsByField, type Doctor } from '@/services/doctorService';
+import { getUpcomingAppointmentsCount } from '@/services/bookingService';
+import { ActivityIndicator, Alert } from 'react-native';
 
 export default function HomeScreen() {
+  const { profile } = useAuth();
+  const [doctors, setDoctors] = useState<Doctor[]>([]);
+  const [upcomingCount, setUpcomingCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const fetchHomeData = useCallback(async () => {
+    try {
+      const [suggestedDoctors, upcoming] = await Promise.all([
+        getSuggestedDoctors(5),
+        profile ? getUpcomingAppointmentsCount(profile.$id) : Promise.resolve(0),
+      ]);
+      setDoctors(suggestedDoctors);
+      setUpcomingCount(upcoming);
+    } catch (err) {
+      console.error('[HomeScreen] Failed to load data:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [profile]);
+
+  useEffect(() => {
+    fetchHomeData();
+  }, [fetchHomeData]);
+
+  const handleCategoryTap = async (field: 'physician' | 'dentist' | 'physiotherapy') => {
+    try {
+      const results = await getDoctorsByField(field);
+      setDoctors(results);
+    } catch (err) {
+      console.error('[HomeScreen] Category filter failed:', err);
+    }
+  };
+
+  const handleSearch = () => {
+    if (searchQuery.trim()) {
+      router.push({ pathname: '/search', params: { q: searchQuery } });
+    }
+  };
+
+  // Emoji for major field
+  const fieldEmoji = (field: string) => {
+    switch (field) {
+      case 'physician': return '🩺';
+      case 'dentist': return '🦷';
+      case 'physiotherapy': return '🧘';
+      default: return '⚕️';
+    }
+  };
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#f9f9f9' }} edges={['top', 'left', 'right']}>
       <View className="flex-1 bg-background flex-col relative">
@@ -21,8 +75,15 @@ export default function HomeScreen() {
                 style={{ flex: 1, backgroundColor: 'transparent', fontSize: 14, marginLeft: 8, padding: 0 }}
                 placeholder="Find doctors, symptoms, clini"
                 placeholderTextColor="#9ca3af"
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                onSubmitEditing={handleSearch}
+                returnKeyType="search"
               />
-              <Pressable style={{ backgroundColor: '#ccff00', borderWidth: 2, borderColor: 'black', borderRadius: 8, width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}>
+              <Pressable 
+                onPress={handleSearch}
+                style={{ backgroundColor: '#ccff00', borderWidth: 2, borderColor: 'black', borderRadius: 8, width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}
+              >
                 <Text style={{ fontSize: 14 }}>⚙️</Text>
               </Pressable>
             </View>
@@ -31,21 +92,30 @@ export default function HomeScreen() {
           {/* Categories */}
           <View className="flex-row justify-around items-center px-4 mt-1">
             <View className="items-center" style={{ gap: 6 }}>
-              <Pressable style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: '#4a5d00', borderWidth: 3, borderColor: 'black', alignItems: 'center', justifyContent: 'center' }}>
+              <Pressable 
+                onPress={() => handleCategoryTap('physician')}
+                style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: '#4a5d00', borderWidth: 3, borderColor: 'black', alignItems: 'center', justifyContent: 'center' }}
+              >
                 <Text style={{ fontSize: 20 }}>🩺</Text>
               </Pressable>
               <Text style={{ fontSize: 9, fontWeight: 'bold', color: 'black', textTransform: 'uppercase' }}>PHYSICIANS</Text>
             </View>
 
             <View className="items-center" style={{ gap: 6 }}>
-              <Pressable style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: '#ff00ff', borderWidth: 3, borderColor: 'black', alignItems: 'center', justifyContent: 'center' }}>
+              <Pressable 
+                onPress={() => handleCategoryTap('physiotherapy')}
+                style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: '#ff00ff', borderWidth: 3, borderColor: 'black', alignItems: 'center', justifyContent: 'center' }}
+              >
                 <Text style={{ fontSize: 20 }}>🧘</Text>
               </Pressable>
               <Text style={{ fontSize: 9, fontWeight: 'bold', color: 'black', textTransform: 'uppercase' }}>PHYSIOTHERAPY</Text>
             </View>
 
             <View className="items-center" style={{ gap: 6 }}>
-              <Pressable style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: '#7fffff', borderWidth: 3, borderColor: 'black', alignItems: 'center', justifyContent: 'center' }}>
+              <Pressable 
+                onPress={() => handleCategoryTap('dentist')}
+                style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: '#7fffff', borderWidth: 3, borderColor: 'black', alignItems: 'center', justifyContent: 'center' }}
+              >
                 <Text style={{ fontSize: 20 }}>🦷</Text>
               </Pressable>
               <Text style={{ fontSize: 9, fontWeight: 'bold', color: 'black', textTransform: 'uppercase' }}>DENTISTS</Text>
@@ -58,74 +128,99 @@ export default function HomeScreen() {
             <View style={{ height: 3, backgroundColor: 'black', width: 160, marginTop: 4 }} />
           </View>
 
-          {/* Cards */}
+          {/* Doctor Cards */}
           <View className="px-4" style={{ gap: 12 }}>
-            
-            {/* Dr. Marcus Vance */}
-            <View style={{ backgroundColor: 'white', borderWidth: 3, borderColor: 'black', borderRadius: 16, padding: 16, position: 'relative' }}>
-              <View style={{ position: 'absolute', top: 12, right: 12, backgroundColor: '#ff00ff', paddingHorizontal: 8, paddingVertical: 2, borderWidth: 2, borderColor: 'black', borderRadius: 4, flexDirection: 'row', alignItems: 'center', gap: 2, zIndex: 10 }}>
-                <Text style={{ fontSize: 10 }}>⭐</Text>
-                <Text style={{ fontSize: 10, fontWeight: 'bold', color: 'black' }}>4.9</Text>
+            {loading ? (
+              <View style={{ paddingVertical: 40, alignItems: 'center' }}>
+                <ActivityIndicator size="large" color="#4a5d00" />
               </View>
-              
-              <View style={{ flexDirection: 'row', gap: 10, marginBottom: 12 }}>
-                <View style={{ width: 56, height: 56, borderRadius: 8, borderWidth: 2, borderColor: 'black', overflow: 'hidden', backgroundColor: '#ccff00' }}>
-                  <Image 
-                    style={{ width: '100%', height: '100%' }}
-                    source={{ uri: "https://lh3.googleusercontent.com/aida-public/AB6AXuCIIxdh-kgzk3qxX4d7ggMTgLgEECwAJDKQ19-FX6vWXALh8yJAqsNOrRY7QNAkgNQZXrh07Kx7mXsp5YH3RwnwHJMnJky2NlAbAxZrUMzgBE3tAshZ7U8s9CtE3K5fO0S0ONK2xLnaJEid9-N0odP1499dPl0megER-XsbMv2m7x2kIDUV2MB3iYg9aYnMG1IeUZ2f3l6bHSVntvCHcSzAhygz_9YJSB5rabWQq6Il3-4osPtmPgUuqPjijyrlgJSiZzHCoESkuQ" }}
-                  />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: 15, fontWeight: '900', color: 'black', lineHeight: 18 }}>Dr. Marcus{'\n'}Vance</Text>
-                  <Text style={{ fontSize: 11, color: '#6b7280', marginTop: 2 }}>Cardiology</Text>
-                </View>
+            ) : doctors.length === 0 ? (
+              <View style={{ backgroundColor: 'white', borderWidth: 3, borderColor: 'black', borderRadius: 16, padding: 24, alignItems: 'center' }}>
+                <Text style={{ fontSize: 40, marginBottom: 8 }}>🔍</Text>
+                <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#6b7280', textAlign: 'center' }}>
+                  No doctors found. Try another category!
+                </Text>
               </View>
+            ) : (
+              doctors.map((doctor) => (
+                <View 
+                  key={doctor.$id} 
+                  style={{ backgroundColor: 'white', borderWidth: 3, borderColor: 'black', borderRadius: 16, padding: 16, position: 'relative' }}
+                >
+                  {/* Rating Badge */}
+                  <View style={{ position: 'absolute', top: 12, right: 12, backgroundColor: '#ff00ff', paddingHorizontal: 8, paddingVertical: 2, borderWidth: 2, borderColor: 'black', borderRadius: 4, flexDirection: 'row', alignItems: 'center', gap: 2, zIndex: 10 }}>
+                    <Text style={{ fontSize: 10 }}>⭐</Text>
+                    <Text style={{ fontSize: 10, fontWeight: 'bold', color: 'black' }}>
+                      {doctor.google_rating?.toFixed(1) || '—'}
+                    </Text>
+                  </View>
+                  
+                  <View style={{ flexDirection: 'row', gap: 10, marginBottom: 12 }}>
+                    {/* Doctor Avatar */}
+                    <View style={{ width: 56, height: 56, borderRadius: 8, borderWidth: 2, borderColor: 'black', overflow: 'hidden', backgroundColor: '#ccff00', alignItems: 'center', justifyContent: 'center' }}>
+                      <Text style={{ fontSize: 24 }}>{fieldEmoji(doctor.major_field)}</Text>
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ fontSize: 15, fontWeight: '900', color: 'black', lineHeight: 18 }}>
+                        {doctor.full_name}
+                      </Text>
+                      <Text style={{ fontSize: 11, color: '#6b7280', marginTop: 2, textTransform: 'capitalize' }}>
+                        {doctor.sub_specialty || doctor.major_field}
+                      </Text>
+                      {doctor.clinic_governorate && (
+                        <Text style={{ fontSize: 10, color: '#9ca3af', marginTop: 1 }}>
+                          📍 {doctor.clinic_district}, {doctor.clinic_governorate}
+                        </Text>
+                      )}
+                    </View>
+                  </View>
 
-              <Pressable 
-                onPress={() => router.push('/booking')}
-                style={{ width: '100%', backgroundColor: '#4a5d00', paddingVertical: 10, borderWidth: 2, borderColor: 'black', borderRadius: 12, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 4 }}
-              >
-                <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5 }}>BOOK APPOINTMENT</Text>
-                <Text style={{ color: 'white', fontSize: 12 }}>→</Text>
-              </Pressable>
-            </View>
+                  <Pressable 
+                    onPress={() => router.push({ pathname: '/booking', params: { doctorId: doctor.$id } })}
+                    style={{ width: '100%', backgroundColor: '#4a5d00', paddingVertical: 10, borderWidth: 2, borderColor: 'black', borderRadius: 12, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 4 }}
+                  >
+                    <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5 }}>BOOK APPOINTMENT</Text>
+                    <Text style={{ color: 'white', fontSize: 12 }}>→</Text>
+                  </Pressable>
+                </View>
+              ))
+            )}
 
-            {/* Two Small Cards */}
+            {/* Upcoming Appointments + Annual Checkup Cards */}
             <View style={{ flexDirection: 'row', gap: 12 }}>
-              {/* Next Slot */}
+              {/* Upcoming Count */}
               <View style={{ flex: 1, backgroundColor: '#7fffff', borderWidth: 3, borderColor: 'black', borderRadius: 16, padding: 14, flexDirection: 'column' }}>
                 <View style={{ backgroundColor: 'white', width: 36, height: 36, borderWidth: 2, borderColor: 'black', borderRadius: 18, alignItems: 'center', justifyContent: 'center' }}>
                   <Text style={{ fontSize: 14 }}>📅</Text>
                 </View>
                 <View style={{ marginTop: 10 }}>
-                  <Text style={{ fontSize: 8, fontWeight: '900', color: 'black', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 }}>NEXT SLOT</Text>
-                  <Text style={{ fontSize: 16, fontWeight: '900', color: 'black', lineHeight: 18 }}>Today</Text>
-                  <Text style={{ color: '#4a5d00', fontSize: 13, fontWeight: 'bold' }}>2:00 PM</Text>
+                  <Text style={{ fontSize: 8, fontWeight: '900', color: 'black', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 }}>UPCOMING</Text>
+                  <Text style={{ fontSize: 16, fontWeight: '900', color: 'black', lineHeight: 18 }}>
+                    {upcomingCount} Appt{upcomingCount !== 1 ? 's' : ''}
+                  </Text>
+                  <Text style={{ color: '#4a5d00', fontSize: 13, fontWeight: 'bold' }}>Scheduled</Text>
                 </View>
               </View>
 
-              {/* Dr. E. Lee */}
+              {/* Quick Stat */}
               <View style={{ flex: 1, backgroundColor: 'white', borderWidth: 3, borderColor: 'black', borderRadius: 16, alignItems: 'center', position: 'relative', overflow: 'hidden', paddingTop: 20, paddingBottom: 12 }}>
                 <View style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 14, backgroundColor: '#ccff00', borderBottomWidth: 2, borderBottomColor: 'black' }} />
-                <View style={{ width: 52, height: 52, borderRadius: 26, borderWidth: 2, borderColor: 'black', overflow: 'hidden', backgroundColor: '#ff00ff' }}>
-                  <Image 
-                    style={{ width: '100%', height: '100%' }}
-                    source={{ uri: "https://lh3.googleusercontent.com/aida-public/AB6AXuB6-acmulJIrDA1YgdHiO8d_io_oyaeWKzp5yqhRrE9KidwYsGt97wttq-evKOzykdddyYOPYaHVykgOGp-jGmyTksw3lGH3l-hFJww-mr61k_-1UL-FDV-SkKAnDiTMwxzn8Oh7sGDqTzmZYkEmUEwyZByEgniZkaOS-NhNFSQRSoPS9lFvojZZDmQfrOsGOs_PiLW4q7YFCGLZ2Wovdtu4SAyNok5-rNA3J35BlnBZgOVHYRIpRfXlxzipueKf6PPBJLjllQzgQ" }}
-                  />
+                <View style={{ width: 52, height: 52, borderRadius: 26, borderWidth: 2, borderColor: 'black', overflow: 'hidden', backgroundColor: '#ff00ff', alignItems: 'center', justifyContent: 'center' }}>
+                  <Text style={{ fontSize: 24 }}>⚕️</Text>
                 </View>
-                <Text style={{ fontWeight: 'bold', fontSize: 12, color: 'black', marginTop: 6 }}>Dr. E. Lee</Text>
-                <Text style={{ fontSize: 9, color: '#6b7280', fontWeight: '500', textTransform: 'uppercase' }}>Dentistry</Text>
+                <Text style={{ fontWeight: 'bold', fontSize: 12, color: 'black', marginTop: 6 }}>MedCare</Text>
+                <Text style={{ fontSize: 9, color: '#6b7280', fontWeight: '500', textTransform: 'uppercase' }}>AI Assistant</Text>
               </View>
             </View>
 
-            {/* Annual Checkup */}
+            {/* Annual Checkup CTA */}
             <View style={{ backgroundColor: '#ccff00', borderWidth: 3, borderColor: 'black', borderRadius: 16, padding: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
               <View style={{ flex: 1, paddingRight: 8 }}>
                 <Text style={{ fontSize: 18, fontWeight: '900', color: 'black', lineHeight: 20, textTransform: 'uppercase' }}>Annual{'\n'}Checkup</Text>
                 <Text style={{ fontSize: 10, color: 'black', fontWeight: '500', lineHeight: 14, marginTop: 4 }}>Don't wait. Secure your{'\n'}health baseline today.</Text>
               </View>
               <Pressable 
-                onPress={() => alert('Scheduling Annual Checkup!')}
+                onPress={() => Alert.alert('Coming Soon', 'Annual checkup scheduling will be available soon!')}
                 style={{ backgroundColor: 'black', paddingHorizontal: 16, paddingVertical: 10, borderWidth: 2, borderColor: 'black', borderRadius: 8 }}
               >
                 <Text style={{ color: 'white', fontWeight: '900', fontSize: 9, textTransform: 'uppercase', letterSpacing: 0.5 }}>Schedule</Text>
@@ -136,7 +231,7 @@ export default function HomeScreen() {
         
         {/* Floating Action Button */}
         <Pressable 
-          onPress={() => alert('AI Bot Chat active!')}
+          onPress={() => Alert.alert('AI Bot', 'AI health assistant coming soon!')}
           style={{ position: 'absolute', bottom: 80, right: 16, width: 48, height: 48, backgroundColor: '#ff00ff', borderWidth: 3, borderColor: 'black', borderRadius: 24, alignItems: 'center', justifyContent: 'center', zIndex: 40 }}
         >
           <Text style={{ fontSize: 18 }}>⚕️</Text>

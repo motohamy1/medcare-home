@@ -8,9 +8,14 @@
     "scheme": "mobileapp",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/expo.icon",
+      "bundleIdentifier": "com.medcarehome.mobileapp",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "MedCare Home uses your location to find the nearest doctors and clinics for you."
+      }
     },
     "android": {
+      "package": "com.medcarehome.mobileapp",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
