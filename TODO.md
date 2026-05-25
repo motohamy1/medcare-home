@@ -1,0 +1,3 @@
+- [ ] Update typography in `mobile-app/src/app/vital.tsx` to prevent text clipping (line-height + tiny font adjustments)
+- [ ] Run a quick check command (lint/type) for the mobile app
+- [ ] Mark completion status

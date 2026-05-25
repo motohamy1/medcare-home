@@ -245,7 +245,7 @@ export default function VitalScreen() {
                 <View className="flex-row justify-between items-center mb-4">
                   <Text className="font-black text-sm uppercase tracking-wider text-black">CURRENT HEALTH STATUS</Text>
                   <View className="bg-white border-2 border-black px-3 py-0.5 rounded-full shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
-                    <Text className="text-[10px] font-black text-black">STABLE</Text>
+                    <Text className="text-[10px] leading-[16px] font-black text-black">STABLE</Text>
                   </View>
                 </View>
 
@@ -254,12 +254,12 @@ export default function VitalScreen() {
                   {/* Heart Rate Card */}
                   <View className="bg-white border-2 border-black rounded-xl p-3 flex-1 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] justify-between">
                     <View>
-                      <Text className="text-[9px] font-black text-gray-500 uppercase tracking-widest">❤️ HEART RATE</Text>
+                      <Text className="text-[10px] leading-[16px] font-black text-gray-500 uppercase tracking-widest">❤️ HEART RATE</Text>
                       <View className="flex-row items-baseline mt-1">
                         <Text className="text-2xl font-black text-black">
                           {hrMetric ? formatVitalValue(hrMetric) : '72'}
                         </Text>
-                        <Text className="text-[10px] font-bold text-gray-700 ml-1">BPM</Text>
+                        <Text className="text-[10px] leading-[16px] font-bold text-gray-700 ml-1">BPM</Text>
                       </View>
                     </View>
                     
@@ -278,17 +278,17 @@ export default function VitalScreen() {
                   {/* Blood Pressure Card */}
                   <View className="bg-white border-2 border-black rounded-xl p-3 flex-1 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] justify-between">
                     <View>
-                      <Text className="text-[9px] font-black text-gray-500 uppercase tracking-widest">🩺 BLOOD PRESS.</Text>
+                      <Text className="text-[10px] leading-[16px] font-black text-gray-500 uppercase tracking-widest">🩺 BLOOD PRESS.</Text>
                       <View className="flex-row items-baseline mt-1">
                         <Text className="text-2xl font-black text-black">
                           {bpMetric ? formatVitalValue(bpMetric) : '118/75'}
                         </Text>
-                        <Text className="text-[9px] font-bold text-gray-700 ml-1">mmHg</Text>
+                        <Text className="text-[10px] leading-[16px] font-bold text-gray-700 ml-1">mmHg</Text>
                       </View>
                     </View>
 
                     <View className="bg-[#e2fce6] px-2 py-1 border border-black rounded self-start mt-4">
-                      <Text className="text-[9px] font-black text-green-800 tracking-wider">🟢 OPTIMAL</Text>
+                      <Text className="text-[10px] leading-[16px] font-black text-green-800 tracking-wider">🟢 OPTIMAL</Text>
                     </View>
                   </View>
                 </View>
@@ -310,7 +310,7 @@ export default function VitalScreen() {
                   onPress={() => setShowTipDetail(true)}
                   className="bg-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] py-2.5 rounded-xl items-center mt-4 active:scale-95"
                 >
-                  <Text className="font-black text-[10px] uppercase text-black tracking-wider">ACKNOWLEDGE</Text>
+                  <Text className="font-black text-[10px] leading-[16px] uppercase text-black tracking-wider">ACKNOWLEDGE</Text>
                 </Pressable>
               </Pressable>
 
@@ -339,7 +339,7 @@ export default function VitalScreen() {
                           <Text className={`font-black text-xs text-black ${isCompleted ? 'line-through text-opacity-70' : ''}`}>
                             {item.name}
                           </Text>
-                          <Text className="text-[10px] font-bold text-gray-600 mt-0.5">{item.desc}</Text>
+                          <Text className="text-[10px] leading-[16px] font-bold text-gray-600 mt-0.5">{item.desc}</Text>
                         </View>
                       </Pressable>
                     );
@@ -361,23 +361,23 @@ export default function VitalScreen() {
                     className="bg-white border-2 border-black rounded-xl p-3 flex-1 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] justify-between active:scale-95"
                   >
                     <View>
-                      <Text className="text-[9px] font-black text-black">💧 HYDRATION ALERT</Text>
-                      <Text className="text-[10px] font-bold text-black mt-1.5 leading-snug">
+                      <Text className="text-[10px] leading-[16px] font-black text-black">💧 HYDRATION ALERT</Text>
+                      <Text className="text-[10px] leading-[16px] font-bold text-black mt-1.5">
                         Based on activity, drink 16oz of water now.
                       </Text>
                     </View>
-                    <Text className="text-[9px] font-black text-[#ff00ff] mt-2.5">VIEW DETAIL →</Text>
+                    <Text className="text-[10px] leading-[16px] font-black text-[#ff00ff] mt-2.5">VIEW DETAIL →</Text>
                   </Pressable>
 
                   {/* Suggestion 2: Activity */}
                   <View className="bg-white border-2 border-black rounded-xl p-3 flex-1 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] justify-between">
                     <View>
-                      <Text className="text-[9px] font-black text-black">🏃 ACTIVITY GAP</Text>
-                      <Text className="text-[10px] font-bold text-black mt-1.5 leading-snug">
+                      <Text className="text-[10px] leading-[16px] font-black text-black">🏃 ACTIVITY GAP</Text>
+                      <Text className="text-[10px] leading-[16px] font-bold text-black mt-1.5">
                         You are 2,000 steps behind your Tuesday average.
                       </Text>
                     </View>
-                    <Text className="text-[9px] font-black text-gray-500 mt-2.5">LOG WALK</Text>
+                    <Text className="text-[10px] leading-[16px] font-black text-gray-500 mt-2.5">LOG WALK</Text>
                   </View>
                 </View>
               </View>
@@ -396,8 +396,8 @@ export default function VitalScreen() {
                   <View className="flex-row items-start relative">
                     <View className="absolute -left-[24px] top-1.5 w-[14px] h-[14px] rounded-full bg-[#7fffff] border-2 border-black z-10" />
                     <View className="bg-white border-2 border-black rounded-xl p-3.5 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] flex-1">
-                      <Text className="text-[10px] font-black text-gray-500">SEP 12, 2023</Text>
-                      <Text className="text-xs font-bold text-black mt-1 leading-snug">
+                      <Text className="text-[10px] leading-[16px] font-black text-gray-500">SEP 12, 2023</Text>
+                      <Text className="text-xs font-bold text-black mt-1 leading-[18px]">
                         ANNUAL PHYSICAL: <Text className="font-black">Dr. Jenkins</Text> - All clear.
                       </Text>
                     </View>
@@ -407,8 +407,8 @@ export default function VitalScreen() {
                   <View className="flex-row items-start relative">
                     <View className="absolute -left-[24px] top-1.5 w-[14px] h-[14px] rounded-full bg-white border-2 border-black z-10" />
                     <View className="bg-white border-2 border-black rounded-xl p-3.5 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] flex-1">
-                      <Text className="text-[10px] font-black text-gray-500">JUL 04, 2023</Text>
-                      <Text className="text-xs font-bold text-black mt-1 leading-snug">
+                      <Text className="text-[10px] leading-[16px] font-black text-gray-500">JUL 04, 2023</Text>
+                      <Text className="text-xs font-bold text-black mt-1 leading-[18px]">
                         PRESCRIPTION UPDATE: <Text className="font-black">Lisinopril 10mg</Text> refilled.
                       </Text>
                     </View>
@@ -430,7 +430,7 @@ export default function VitalScreen() {
                 {showLogModal && (
                   <View className="bg-white border-3 border-black rounded-b-2xl p-5 gap-4 border-t-0 -mt-1 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                     <View className="gap-1.5">
-                      <Text className="text-[10px] font-black uppercase text-black">Heart Rate (BPM)</Text>
+                      <Text className="text-[10px] leading-[16px] font-black uppercase text-black">Heart Rate (BPM)</Text>
                       <TextInput
                         value={heartRate}
                         onChangeText={setHeartRate}
@@ -441,7 +441,7 @@ export default function VitalScreen() {
                     </View>
 
                     <View className="gap-1.5">
-                      <Text className="text-[10px] font-black uppercase text-black">Blood Pressure (SYS / DIA)</Text>
+                      <Text className="text-[10px] leading-[16px] font-black uppercase text-black">Blood Pressure (SYS / DIA)</Text>
                       <View className="flex-row gap-2.5">
                         <TextInput
                           value={systolic}
@@ -462,7 +462,7 @@ export default function VitalScreen() {
                     </View>
 
                     <View className="gap-1.5">
-                      <Text className="text-[10px] font-black uppercase text-black">Blood Glucose (mg/dL)</Text>
+                      <Text className="text-[10px] leading-[16px] font-black uppercase text-black">Blood Glucose (mg/dL)</Text>
                       <TextInput
                         value={glucose}
                         onChangeText={setGlucose}
@@ -496,7 +496,7 @@ export default function VitalScreen() {
               <View className="flex-row justify-between items-center mb-1">
                 <Text className="text-xl font-black text-black uppercase tracking-tight">TODAY'S REGIMEN</Text>
                 <View className="bg-[#ccff00] border-2 border-black px-3.5 py-1 rounded-full shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                  <Text className="text-[10px] font-black text-black">OCT 24</Text>
+                  <Text className="text-[10px] leading-[16px] font-black text-black">OCT 24</Text>
                 </View>
               </View>
 
@@ -514,7 +514,7 @@ export default function VitalScreen() {
                     <View className="absolute inset-0 rounded-full border-2 border-black" />
                     
                     <Text className="text-3xl font-black text-black leading-none">{progressPercent}%</Text>
-                    <Text className="text-[9px] font-black text-gray-500 uppercase mt-1">
+                    <Text className="text-[10px] leading-[16px] font-black text-gray-500 uppercase mt-1">
                       {completedRegimenCount} of {totalRegimenCount} taken
                     </Text>
                   </View>
@@ -528,7 +528,7 @@ export default function VitalScreen() {
                     <Text className="text-base">✓</Text>
                     <View>
                       <Text className="font-black text-xs text-green-900">REFILL REQUESTED</Text>
-                      <Text className="text-[9px] font-bold text-green-700 mt-0.5">Order sent to Pharmacy</Text>
+                      <Text className="text-[10px] leading-[16px] font-bold text-green-700 mt-0.5">Order sent to Pharmacy</Text>
                     </View>
                   </View>
                   <View className="bg-white border border-black px-2 py-0.5 rounded">
@@ -539,7 +539,7 @@ export default function VitalScreen() {
                 <View className="bg-[#ffccd2] border-3 border-black rounded-2xl p-4 flex-row items-center justify-between shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                   <View className="flex-1 pr-2">
                     <Text className="font-black text-xs text-red-900">⚠️ ALERT: Lisinopril running low</Text>
-                    <Text className="text-[9px] font-bold text-red-700 mt-0.5">3 days left (Refill Recommended)</Text>
+                    <Text className="text-[10px] leading-[16px] font-bold text-red-700 mt-0.5">3 days left (Refill Recommended)</Text>
                   </View>
                   <Pressable 
                     onPress={() => {
@@ -548,7 +548,7 @@ export default function VitalScreen() {
                     }}
                     className="bg-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] px-3 py-1.5 rounded-xl active:scale-95"
                   >
-                    <Text className="text-[9px] font-black text-black uppercase">REFILL SOON</Text>
+                    <Text className="text-[10px] leading-[16px] font-black text-black uppercase">REFILL SOON</Text>
                   </Pressable>
                 </View>
               )}
@@ -564,7 +564,7 @@ export default function VitalScreen() {
                       <View className="flex-row justify-between items-start">
                         <View className="flex-row items-center gap-2">
                           <Text className="text-base">{item.icon}</Text>
-                          <Text className="font-black text-[10px] text-black tracking-wider">{item.time}</Text>
+                          <Text className="font-black text-[10px] leading-[16px] text-black tracking-wider">{item.time}</Text>
                         </View>
                         {item.completed && (
                           <View className="bg-black border border-black px-2 py-0.5 rounded">
@@ -574,7 +574,7 @@ export default function VitalScreen() {
                       </View>
 
                       <Text className="font-black text-sm text-black mt-2">{item.name}</Text>
-                      <Text className="text-[10px] font-bold text-gray-700 mt-0.5">{item.dose}</Text>
+                      <Text className="text-[10px] leading-[16px] font-bold text-gray-700 mt-0.5">{item.dose}</Text>
 
                       {/* Action toggle button */}
                       <Pressable 
@@ -585,7 +585,7 @@ export default function VitalScreen() {
                             : 'bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
                         }`}
                       >
-                        <Text className="font-black text-[10px] text-black uppercase tracking-wider">
+                        <Text className="font-black text-[10px] leading-[16px] text-black uppercase tracking-wider">
                           {item.completed ? '✓ TAKEN' : '✓ TAKE NOW'}
                         </Text>
                       </Pressable>
@@ -620,7 +620,7 @@ export default function VitalScreen() {
               {/* Modal Header */}
               <View className="flex-row justify-between items-start border-b-2 border-black pb-3 mb-4">
                 <View className="flex-1">
-                  <Text className="text-[10px] font-black text-gray-500 uppercase tracking-widest">MEDCAREHOME AI INSIGHT</Text>
+                  <Text className="text-[10px] leading-[16px] font-black text-gray-500 uppercase tracking-widest">MEDCAREHOME AI INSIGHT</Text>
                   <Text className="text-xl font-black text-black leading-tight mt-1">Hydration & Cognitive Peak</Text>
                 </View>
                 <Pressable 
@@ -634,14 +634,14 @@ export default function VitalScreen() {
               <ScrollView showsVerticalScrollIndicator={false} className="flex-col gap-4">
                 {/* Pill tag */}
                 <View className="bg-[#ccff00] border-2 border-black px-3.5 py-1 rounded-full self-start mb-3 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                  <Text className="text-[9px] font-black text-black">🔥 HIGH IMPACT</Text>
+                  <Text className="text-[10px] leading-[16px] font-black text-black">🔥 HIGH IMPACT</Text>
                 </View>
 
                 {/* The Science Card */}
                 <View className="bg-[#ffc2eb] border-2 border-black rounded-xl p-4 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] mb-3">
                   <View className="flex-row items-center gap-1 mb-1.5">
                     <Text className="text-base">🧪</Text>
-                    <Text className="font-black text-[10px] text-black uppercase tracking-wider">THE SCIENCE</Text>
+                    <Text className="font-black text-[10px] leading-[16px] text-black uppercase tracking-wider">THE SCIENCE</Text>
                   </View>
                   <Text className="text-xs font-bold text-black leading-relaxed">
                     Dehydration by just 2% impairs cognitive performance, attention, and memory recall. Keeping cell hydration optimal ensures maximum neurotransmitter efficiency.
@@ -670,7 +670,7 @@ export default function VitalScreen() {
 
                 {/* COMPLIANCE CHART */}
                 <View className="bg-white border-2 border-black rounded-xl p-4 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] mb-4">
-                  <Text className="font-black text-[9px] text-black uppercase tracking-wider mb-3">
+                  <Text className="font-black text-[10px] leading-[16px] text-black uppercase tracking-wider mb-3">
                     📅 TIP COMPLIANCE THIS WEEK
                   </Text>
 
@@ -689,7 +689,7 @@ export default function VitalScreen() {
                       return (
                         <View key={idx} className="items-center gap-1.5">
                           <View className={`w-4 border border-black rounded-t ${barBg}`} style={{ height: barHeight }} />
-                          <Text className="text-[9px] font-black text-black">{day}</Text>
+                          <Text className="text-[10px] leading-[16px] font-black text-black">{day}</Text>
                         </View>
                       );
                     })}
@@ -742,7 +742,7 @@ export default function VitalScreen() {
 
               {/* Form Input fields */}
               <View className="gap-1.5">
-                <Text className="text-[10px] font-black uppercase text-black">Medication Name</Text>
+                <Text className="text-[10px] leading-[16px] font-black uppercase text-black">Medication Name</Text>
                 <TextInput
                   value={newMedName}
                   onChangeText={setNewMedName}
@@ -752,7 +752,7 @@ export default function VitalScreen() {
               </View>
 
               <View className="gap-1.5">
-                <Text className="text-[10px] font-black uppercase text-black">Dosage / Details</Text>
+                <Text className="text-[10px] leading-[16px] font-black uppercase text-black">Dosage / Details</Text>
                 <TextInput
                   value={newMedDose}
                   onChangeText={setNewMedDose}
@@ -762,7 +762,7 @@ export default function VitalScreen() {
               </View>
 
               <View className="gap-1.5">
-                <Text className="text-[10px] font-black uppercase text-black">Time of Day</Text>
+                <Text className="text-[10px] leading-[16px] font-black uppercase text-black">Time of Day</Text>
                 <View className="flex-row gap-2">
                   {/* Morning */}
                   <Pressable 
@@ -771,7 +771,7 @@ export default function VitalScreen() {
                       newMedTime === 'MORNING' ? 'bg-[#7fffff] shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]' : 'bg-white'
                     }`}
                   >
-                    <Text className="text-[10px] font-black text-black">☀️ MORNING</Text>
+                    <Text className="text-[10px] leading-[16px] font-black text-black">☀️ MORNING</Text>
                   </Pressable>
                   {/* Afternoon */}
                   <Pressable 
@@ -780,7 +780,7 @@ export default function VitalScreen() {
                       newMedTime === 'AFTERNOON' ? 'bg-[#ccff00] shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]' : 'bg-white'
                     }`}
                   >
-                    <Text className="text-[10px] font-black text-black">🌤️ AFTER</Text>
+                    <Text className="text-[10px] leading-[16px] font-black text-black">🌤️ AFTER</Text>
                   </Pressable>
                   {/* Evening */}
                   <Pressable 
@@ -789,7 +789,7 @@ export default function VitalScreen() {
                       newMedTime === 'EVENING' ? 'bg-[#ffc2eb] shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]' : 'bg-white'
                     }`}
                   >
-                    <Text className="text-[10px] font-black text-black">🌙 NIGHT</Text>
+                    <Text className="text-[10px] leading-[16px] font-black text-black">🌙 NIGHT</Text>
                   </Pressable>
                 </View>
               </View>

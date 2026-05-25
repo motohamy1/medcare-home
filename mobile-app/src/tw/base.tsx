@@ -1,7 +1,7 @@
 import {
   useCssElement,
   useNativeVariable as useFunctionalVariable,
-} from "react-native-css";
+} from "react-native-css/native";
 
 import { Link as RouterLink } from "expo-router";
 import Animated from "react-native-reanimated";
