@@ -1,3 +1,4 @@
-- [ ] Update typography in `mobile-app/src/app/vital.tsx` to prevent text clipping (line-height + tiny font adjustments)
-- [ ] Run a quick check command (lint/type) for the mobile app
-- [ ] Mark completion status
+- [x] Update Search doctor card UI in `mobile-app/src/app/search.tsx` to match Home doctor card style.
+- [x] Keep Search-specific badges/features while aligning spacing/visual hierarchy with Home card.
+- [ ] Run a quick project check command to validate no immediate errors.
+- [x] Mark completed tasks in this TODO.

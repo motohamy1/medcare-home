@@ -3,6 +3,7 @@ import { View, Text, ScrollView, Pressable, TextInput } from '@/tw';
 import { Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router } from 'expo-router';
+import type { Href } from 'expo-router';
 import {
   searchDoctors,
   type UnifiedDoctorResult,
@@ -20,6 +21,7 @@ export default function SearchScreen() {
   const [externalCount, setExternalCount] = useState(0);
   const [userLocation, setUserLocation] = useState<LatLng | null>(null);
   const [locationStatus, setLocationStatus] = useState<'loading' | 'granted' | 'denied'>('loading');
+  const [lastLocationSearchQuery, setLastLocationSearchQuery] = useState('');
 
   // Request location on first mount
   useEffect(() => {
@@ -43,6 +45,9 @@ export default function SearchScreen() {
         setResults(res.results);
         setIntent(res.intent);
         setExternalCount(res.externalCount);
+        if (userLocation) {
+          setLastLocationSearchQuery(queryStr.trim());
+        }
       } catch (err) {
         console.error('[SearchScreen] Search failed:', err);
       } finally {
@@ -59,6 +64,13 @@ export default function SearchScreen() {
       performSearch(q);
     }
   }, [q, performSearch]);
+
+  // Re-run the query once location becomes available, so results are truly local.
+  useEffect(() => {
+    if (userLocation && searchQuery.trim() && searchQuery.trim() !== lastLocationSearchQuery) {
+      performSearch(searchQuery);
+    }
+  }, [userLocation, searchQuery, lastLocationSearchQuery, performSearch]);
 
   const handleSearchSubmit = () => {
     performSearch(searchQuery);
@@ -265,13 +277,23 @@ export default function SearchScreen() {
                         key={item.id}
                         style={{
                           backgroundColor: 'white', borderWidth: 3, borderColor: 'black', borderRadius: 16,
-                          padding: 16, position: 'relative', shadowColor: 'black',
-                          shadowOffset: { width: 4, height: 4 }, shadowOpacity: 1, shadowRadius: 0, elevation: 4,
+                          padding: 16,
                         }}
                       >
-                        {/* Top-right badges */}
-                        <View style={{ position: 'absolute', top: 12, right: 12, flexDirection: 'row', gap: 6 }}>
-                          {/* Distance badge */}
+                        {/* Labels row */}
+                        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 12 }}>
+                          {item.isBestMatch && (
+                            <View
+                              style={{
+                                backgroundColor: '#ffde59', paddingHorizontal: 8, paddingVertical: 2,
+                                borderWidth: 2, borderColor: 'black', borderRadius: 4,
+                                flexDirection: 'row', alignItems: 'center', gap: 2,
+                              }}
+                            >
+                              <Text style={{ fontSize: 10 }}>🏅</Text>
+                              <Text style={{ fontSize: 10, fontWeight: 'bold', color: 'black' }}>Best match</Text>
+                            </View>
+                          )}
                           {typeof item.distance_km === 'number' && (
                             <View
                               style={{
@@ -284,20 +306,6 @@ export default function SearchScreen() {
                               <Text style={{ fontSize: 10, fontWeight: 'bold', color: 'black' }}>{formatDistance(item.distance_km)}</Text>
                             </View>
                           )}
-                          {/* Rating badge (only for bookable/internal results) */}
-                          {item.isBookable && item.google_rating > 0 && (
-                            <View
-                              style={{
-                                backgroundColor: '#ff00ff', paddingHorizontal: 8, paddingVertical: 2,
-                                borderWidth: 2, borderColor: 'black', borderRadius: 4,
-                                flexDirection: 'row', alignItems: 'center', gap: 2,
-                              }}
-                            >
-                              <Text style={{ fontSize: 10 }}>⭐</Text>
-                              <Text style={{ fontSize: 10, fontWeight: 'bold', color: 'black' }}>{item.google_rating.toFixed(1)}</Text>
-                            </View>
-                          )}
-                          {/* External source badge */}
                           {!item.isBookable && (
                             <View
                               style={{
@@ -310,26 +318,39 @@ export default function SearchScreen() {
                               <Text style={{ fontSize: 10, fontWeight: 'bold', color: 'black' }}>LIVE</Text>
                             </View>
                           )}
+                          {item.isBookable && item.google_rating > 0 && (
+                            <View
+                              style={{
+                                backgroundColor: '#ff00ff', paddingHorizontal: 8, paddingVertical: 2,
+                                borderWidth: 2, borderColor: 'black', borderRadius: 4,
+                                flexDirection: 'row', alignItems: 'center', gap: 2,
+                              }}
+                            >
+                              <Text style={{ fontSize: 10 }}>⭐</Text>
+                              <Text style={{ fontSize: 10, fontWeight: 'bold', color: 'black' }}>{item.google_rating.toFixed(1)}</Text>
+                            </View>
+                          )}
                         </View>
 
+                        {/* Doctor info */}
                         <View style={{ flexDirection: 'row', gap: 10, marginBottom: 12 }}>
-                          <View
-                            style={{
-                              width: 56, height: 56, borderRadius: 8, borderWidth: 2, borderColor: 'black',
-                              overflow: 'hidden', backgroundColor: item.isBookable ? '#ccff00' : '#ff00ff',
-                              alignItems: 'center', justifyContent: 'center',
-                            }}
-                          >
+                          <View style={{ width: 56, height: 56, borderRadius: 8, borderWidth: 2, borderColor: 'black', overflow: 'hidden', backgroundColor: item.isBookable ? '#ccff00' : '#ff00ff', alignItems: 'center', justifyContent: 'center' }}>
                             <Text style={{ fontSize: 24 }}>{fieldEmoji(item.major_field)}</Text>
                           </View>
-                          <View style={{ flex: 1, paddingRight: 80 }}>
+                          <View style={{ flex: 1 }}>
                             <Text style={{ fontSize: 15, fontWeight: '900', color: 'black', lineHeight: 18 }}>
                               {item.full_name}
                             </Text>
                             <Text style={{ fontSize: 11, color: '#6b7280', marginTop: 2, textTransform: 'capitalize' }}>
                               {item.sub_specialty || item.major_field}
                             </Text>
-                            <Text style={{ fontSize: 10, color: '#9ca3af', marginTop: 1 }}>
+                          </View>
+                        </View>
+
+                        {/* Location & info row */}
+                        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 12 }}>
+                          <View style={{ backgroundColor: '#f3f4f6', borderWidth: 1, borderColor: '#d1d5db', borderRadius: 999, paddingHorizontal: 8, paddingVertical: 4 }}>
+                            <Text style={{ fontSize: 11, color: '#374151', fontWeight: '700' }}>
                               📍 {item.location_text}
                             </Text>
                           </View>
@@ -338,7 +359,12 @@ export default function SearchScreen() {
                         {/* Action button */}
                         {item.isBookable ? (
                           <Pressable
-                            onPress={() => router.push({ pathname: '/booking', params: { doctorId: item.id } })}
+                            onPress={() =>
+                              router.push({
+                                pathname: '/booking',
+                                params: { doctorId: String(item.id) },
+                              } as Href)
+                            }
                             style={{
                               width: '100%', backgroundColor: '#4a5d00', paddingVertical: 10,
                               borderWidth: 2, borderColor: 'black', borderRadius: 12,

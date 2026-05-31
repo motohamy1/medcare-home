@@ -5,7 +5,7 @@ import { BottomNavBar } from '@/components/BottomNavBar';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
-import { getSuggestedDoctors, getDoctorsByField, type Doctor } from '@/services/doctorService';
+import { getSuggestedDoctors, getDoctorsByField, displayDoctorName, type Doctor } from '@/services/doctorService';
 import { getUpcomingAppointmentsCount } from '@/services/bookingService';
 import { ActivityIndicator, Alert } from 'react-native';
 

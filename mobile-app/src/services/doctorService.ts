@@ -44,6 +44,10 @@ export interface UnifiedDoctorResult {
   review_count: number;
   /** true = from our Appwrite DB (can book). false = from Google Places (discover only). */
   isBookable: boolean;
+  /** Search relevance score (lower is better). */
+  relevanceScore?: number;
+  /** True for the top recommended result. */
+  isBestMatch?: boolean;
   /** Only present for internal doctors */
   internalData?: DoctorWithDistance;
   /** Only present for external doctors */
@@ -59,15 +63,88 @@ function mergeDoctorsUnique(arrA: Doctor[], arrB: Doctor[]): Doctor[] {
   return Array.from(map.values());
 }
 
-/** Build a composite sort score. Lower = better. */
-function compositeScore(distance: number, rating: number): number {
-  if (distance < 3) {
-    return (5 - rating) * 100 + distance;
+/** Build a combined relevance score. Lower = better. */
+function computeRelevanceScore(result: UnifiedDoctorResult, intent: SearchIntent | null, locationUsed: boolean): number {
+  let score = 0;
+
+  // Force internal/bookable results slightly ahead when relevance is close.
+  if (!result.isBookable) score += 8;
+
+  // Intent match penalty: major field + specialty.
+  if (intent) {
+    if (intent.major_field && result.major_field !== intent.major_field) {
+      score += 40;
+    }
+
+    const normalizedSpecialty = intent.specialty?.toLowerCase() || '';
+    const resultSpecialty = (result.sub_specialty || result.major_field).toLowerCase();
+    if (normalizedSpecialty && !resultSpecialty.includes(normalizedSpecialty)) {
+      score += 18;
+    }
   }
-  if (distance <= 15) {
-    return distance * 10 + (5 - rating) * 20;
+
+  // Distance matters when we have location.
+  if (locationUsed && typeof result.distance_km === 'number') {
+    score += Math.min(result.distance_km, 50) * 2;
   }
-  return distance * 20 + (5 - rating) * 5;
+
+  // Prioritize higher-rated providers.
+  score += Math.max(0, 5 - (result.google_rating ?? 0)) * 5;
+
+  return score;
+}
+
+function normalizeSearchKeyword(text: string): string {
+  return text.trim().toLowerCase();
+}
+
+function inferSearchIntentFromQuery(rawQuery: string): SearchIntent {
+  const q = rawQuery.toLowerCase();
+  const intent: SearchIntent = {
+    major_field: 'physician',
+    specialty: '',
+    symptoms: [],
+    keywords: q.split(/\s+/).filter(Boolean),
+  };
+
+  if (q.includes('dentist') || q.includes('dental') || q.includes('tooth') || q.includes('أسنان') || q.includes('ضرزري')) {
+    intent.major_field = 'dentist';
+    intent.specialty = 'Dentistry';
+  } else if (q.includes('physio') || q.includes('therapy') || q.includes('rehab') || q.includes('علاج') || q.includes('طبيعي')) {
+    intent.major_field = 'physiotherapy';
+    intent.specialty = 'Physiotherapy';
+  } else if (q.includes('cardio') || q.includes('heart') || q.includes('قلب')) {
+    intent.specialty = 'Cardiology';
+  } else if (q.includes('pediatric') || q.includes('child') || q.includes('أطفال')) {
+    intent.specialty = 'Pediatrics';
+  } else if (q.includes('derma') || q.includes('skin') || q.includes('جلد')) {
+    intent.specialty = 'Dermatology';
+  } else if (q.includes('ortho') || q.includes('bone') || q.includes('joint') || q.includes('عظام')) {
+    intent.specialty = 'Orthopedics';
+  } else if (q.includes('neuro') || q.includes('brain') || q.includes('عصب') || q.includes('مخ')) {
+    intent.specialty = 'Neurology';
+  } else if (q.includes('gyn') || q.includes('women') || q.includes('نساء')) {
+    intent.specialty = 'Gynecology';
+  } else if (q.includes('gastro') || q.includes('stomach') || q.includes('بطن') || q.includes('معدة')) {
+    intent.specialty = 'Gastroenterology';
+  } else if (q.includes('eye') || q.includes('vision') || q.includes('عيون') || q.includes('نظر')) {
+    intent.specialty = 'Ophthalmology';
+  } else if (q.includes('ent') || q.includes('ear') || q.includes('اذن') || q.includes('أنف')) {
+    intent.specialty = 'ENT';
+  } else if (q.includes('psych') || q.includes('mental') || q.includes('نفس') || q.includes('ذهن')) {
+    intent.specialty = 'Psychiatry';
+  } else if (q.includes('urology') || q.includes('kidney') || q.includes('كلى') || q.includes('بول')) {
+    intent.specialty = 'Urology';
+  }
+
+  if (q.includes('dr ') || q.includes('dr. ') || q.includes('doctor ')) {
+    intent.doctor_name = rawQuery;
+  }
+
+  const symptomKeywords = ['pain', 'fever', 'cough', 'headache', 'stomach', 'back', 'skin', 'nausea', 'dizziness'];
+  intent.symptoms = symptomKeywords.filter((symptom) => q.includes(symptom));
+
+  return intent;
 }
 
 /** Convert internal Doctor to unified result */
@@ -183,6 +260,7 @@ export async function searchDoctors(
 
   // ── Step 1: AI intent extraction ────────────────────────────────────────────
   let intent: SearchIntent | null = null;
+  let aiExtractionFailed = false;
   try {
     const execution = await functions.createExecution(
       fns.maintenanceCron,
@@ -194,43 +272,62 @@ export async function searchDoctors(
     const parsed = JSON.parse(execution.responseBody);
     if (parsed.success && parsed.intent) {
       intent = parsed.intent;
+    } else {
+      aiExtractionFailed = true;
     }
   } catch (err) {
     console.error('[doctorService] AI search intent extraction failed:', err);
+    aiExtractionFailed = true;
+  }
+
+  if (!intent || aiExtractionFailed) {
+    intent = inferSearchIntentFromQuery(rawQuery);
   }
 
   // ── Step 2: Build search query strings ──────────────────────────────────────
-  // For Overpass API we need a clean text query
+  // For Overpass API we need a clean text query. Use fallback mapping when AI intent is not specific.
   let placesQuery = rawQuery;
-  if (intent?.specialty) {
-    placesQuery = `${intent.specialty} doctor`;
-  }
-  if (intent?.major_field === 'dentist') {
-    placesQuery = intent?.specialty ? `${intent.specialty} dentist` : 'dentist';
-  }
-  if (intent?.major_field === 'physiotherapy') {
-    placesQuery = intent?.specialty ? `${intent.specialty} physiotherapy` : 'physiotherapist';
+  if (intent.specialty) {
+    const normalizedSpecialty = normalizeSearchKeyword(intent.specialty);
+    if (intent.major_field === 'dentist') {
+      placesQuery = `${normalizedSpecialty} dentist`;
+    } else if (intent.major_field === 'physiotherapy') {
+      placesQuery = `${normalizedSpecialty} physiotherapist`;
+    } else {
+      placesQuery = `${normalizedSpecialty} doctor`;
+    }
+  } else if (intent.major_field === 'dentist') {
+    placesQuery = 'dentist';
+  } else if (intent.major_field === 'physiotherapy') {
+    placesQuery = 'physiotherapist';
   }
 
   // ── Step 3: Parallel search — internal DB + Overpass API ────────────────
+  const localRadiusMeters = userLocation ? 50000 : 30000;
   const [internalDoctors, externalPlaces] = await Promise.all([
     searchInternalDoctors(rawQuery, intent, userLocation),
-    searchGooglePlaces(placesQuery, userLocation, 15000),
+    searchGooglePlaces(placesQuery, userLocation, localRadiusMeters),
   ]);
 
-  // ── Step 4: Merge and sort ────────────────────────────────────────────────
+  // ── Step 4: Merge, score, and sort ────────────────────────────────────────
   const merged = mergeUnifiedResults(internalDoctors, externalPlaces);
-
   const locationUsed = !!userLocation;
+  merged.forEach((item) => {
+    item.relevanceScore = computeRelevanceScore(item, intent, locationUsed);
+  });
 
-  if (locationUsed) {
-    merged.sort((a, b) => {
-      const scoreA = compositeScore(a.distance_km ?? 999, a.google_rating);
-      const scoreB = compositeScore(b.distance_km ?? 999, b.google_rating);
-      return scoreA - scoreB;
-    });
-  } else {
-    merged.sort((a, b) => b.google_rating - a.google_rating);
+  merged.sort((a, b) => {
+    if ((a.relevanceScore ?? 0) !== (b.relevanceScore ?? 0)) {
+      return (a.relevanceScore ?? 0) - (b.relevanceScore ?? 0);
+    }
+    if (locationUsed) {
+      return (a.distance_km ?? 999) - (b.distance_km ?? 999);
+    }
+    return (b.google_rating ?? 0) - (a.google_rating ?? 0);
+  });
+
+  if (merged.length > 0) {
+    merged[0].isBestMatch = true;
   }
 
   return {
@@ -289,25 +386,28 @@ async function searchInternalDoctors(
     console.error('[doctorService] Raw search_index query failed:', err);
   }
 
-  // Calculate distances
-  let enriched: DoctorWithDistance[] = allDoctors;
+  // Calculate distances and sort by proximity when location is available.
+  // We no longer hard-filter by distance — far-away doctors get penalized
+  // in relevance scoring but are still visible as a fallback.
   if (userLocation) {
-    enriched = allDoctors.map((doc) => {
+    const withDistance: DoctorWithDistance[] = allDoctors.flatMap((doc) => {
       const docLoc = decodeGeohash(doc.geohash);
-      if (docLoc) {
-        const distance = calculateDistanceKm(
-          userLocation.latitude,
-          userLocation.longitude,
-          docLoc.latitude,
-          docLoc.longitude
-        );
-        return { ...doc, distance_km: distance };
-      }
-      return doc;
+      if (!docLoc) return [];
+
+      const distance = calculateDistanceKm(
+        userLocation.latitude,
+        userLocation.longitude,
+        docLoc.latitude,
+        docLoc.longitude
+      );
+
+      return [{ ...doc, distance_km: distance }];
     });
+
+    return withDistance.sort((a, b) => (a.distance_km ?? 999) - (b.distance_km ?? 999));
   }
 
-  return enriched;
+  return allDoctors;
 }
 
 /** Fetch reviews for a doctor */

@@ -1,6 +1,13 @@
 import { calculateDistanceKm, type LatLng } from '@/lib/location';
 
 const OVERPASS_API_URL = 'https://overpass-api.de/api/interpreter';
+const PHOTON_API_URL = 'https://photon.komoot.io/api/';
+
+/** Approximate Egypt bounding box used when no user location is available */
+const EGYPT_BBOX = { south: 22.0, north: 32.0, west: 25.0, east: 37.0 };
+
+/** Default Egypt center (Cairo) used when user location is unavailable */
+const DEFAULT_EGYPT_LOCATION: LatLng = { latitude: 30.0444, longitude: 31.2357 };
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 export interface PlaceDoctor {
@@ -98,52 +105,66 @@ function inferSubSpecialty(tags: Record<string, string>, queryContext: string): 
  * If userLocation is provided, uses "around" search.
  * Otherwise, uses a bounding box over Egypt as fallback.
  */
+function shouldApplyNameFilter(keywords: string): boolean {
+  if (!keywords || keywords.trim().length < 2) return false;
+  const lower = keywords.toLowerCase();
+
+  return (
+    !lower.includes('doctor') &&
+    !lower.includes('dentist') &&
+    !lower.includes('hospital') &&
+    !lower.includes('عيادة') &&
+    !lower.includes('مستشفى') &&
+    !lower.includes('دكتور') &&
+    !lower.includes('طبيب')
+  );
+}
+
 function buildOverpassQuery(keywords: string, userLocation?: LatLng, radiusMeters = 15000): string {
   const kw = keywords.toLowerCase();
 
-  // Determine which amenity types to search
-  let amenityFilters = '';
-  if (kw.includes('dentist') || kw.includes('dental') || kw.includes('tooth')) {
-    amenityFilters = '["amenity"="dentist"]';
-  } else if (kw.includes('physio') || kw.includes('therapy') || kw.includes('rehab')) {
-    amenityFilters = '["amenity"="physiotherapist"]';
+  // Determine which amenity types to search in priority order
+  let amenityTypes: string[];
+  if (kw.includes('dentist') || kw.includes('dental') || kw.includes('tooth') || kw.includes('أسنان') || kw.includes('ضرزري')) {
+    amenityTypes = ['dentist'];
+  } else if (kw.includes('physio') || kw.includes('therapy') || kw.includes('rehab') || kw.includes('علاج') || kw.includes('طبيعي')) {
+    amenityTypes = ['physiotherapist'];
   } else {
-    // Default: search all medical types
-    amenityFilters = '["amenity"~"doctors|doctor|hospital|clinic"]';
+    // Priority: individual doctors first, then clinics, then hospitals
+    amenityTypes = ['doctor', 'doctors', 'clinic', 'hospital'];
   }
 
-  // Also search by name if query looks like a proper name
-  const hasName = keywords.length >= 3 && !kw.includes('doctor') && !kw.includes('dentist') && !kw.includes('hospital');
+  const hasName = shouldApplyNameFilter(keywords);
   const nameFilter = hasName ? `["name"~"${escapeRegex(keywords)}", i]` : '';
 
-  // Combine all filters
-  const allFilters = `${amenityFilters}${nameFilter}`;
+  // Build grouped union in priority order
+  const elements = ['node', 'way', 'relation'];
+  const groups: string[] = [];
+  for (const amenity of amenityTypes) {
+    for (const el of elements) {
+      groups.push(`${el}["amenity"="${amenity}"]${nameFilter}`);
+    }
+  }
 
+  // Location: user location, or default to Egypt bounding box
+  let bboxSuffix: string;
   if (userLocation) {
     const lat = userLocation.latitude;
     const lon = userLocation.longitude;
-    const r = radiusMeters;
-
-    return `[out:json][timeout:20];
-(
-  node${allFilters}(around:${r},${lat},${lon});
-  way${allFilters}(around:${r},${lat},${lon});
-  relation${allFilters}(around:${r},${lat},${lon});
-);
-out center 30;
-`;
+    bboxSuffix = `(around:${radiusMeters},${lat},${lon})`;
   } else {
-    // No location: search globally (useful for named searches like "Dr Ahmed")
-    // Limit to 30 results to avoid timeouts
-    return `[out:json][timeout:20];
+    const { south, north, west, east } = EGYPT_BBOX;
+    bboxSuffix = `(${south},${west},${north},${east})`;
+  }
+
+  const withLocation = groups.map(g => `${g}${bboxSuffix}`);
+
+  return `[out:json][timeout:25];
 (
-  node${allFilters};
-  way${allFilters};
-  relation${allFilters};
+  ${withLocation.join(';\n  ')};
 );
 out center 30;
 `;
-  }
 }
 
 /** Escape a string for use in Overpass regex */
@@ -152,56 +173,113 @@ function escapeRegex(str: string): string {
 }
 
 // ─── Overpass API Search (FREE, no API key) ──────────────────────────────────
-export async function searchGooglePlaces(
-  query: string,
-  userLocation?: LatLng,
-  radiusMeters = 15000
+const USER_AGENT = 'MedCare-App/1.0 (health-search; contact@medcare.app)';
+
+function buildOverpassHeaders(contentType: string) {
+  return {
+    'Content-Type': contentType,
+    'Accept': '*/*',
+    'User-Agent': USER_AGENT,
+  };
+}
+
+function fetchWithTimeout(url: string, init: RequestInit, timeoutMs = 8000): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  const requestInit = { ...init, signal: controller.signal };
+
+  return fetch(url, requestInit).finally(() => clearTimeout(timeoutId));
+}
+
+function inferMajorFieldFromQuery(keywords: string): 'physician' | 'dentist' | 'physiotherapy' | 'unknown' {
+  const q = keywords.toLowerCase();
+  if (q.includes('dentist') || q.includes('dental') || q.includes('tooth')) return 'dentist';
+  if (q.includes('physio') || q.includes('therapy') || q.includes('rehab')) return 'physiotherapy';
+  if (q.includes('clinic') || q.includes('hospital') || q.includes('doctor') || q.includes('doctors')) return 'physician';
+  return 'unknown';
+}
+
+async function fetchOverpassResponse(endpoint: string, overpassQuery: string): Promise<Response | null> {
+  try {
+    const res = await fetchWithTimeout(endpoint, {
+      method: 'POST',
+      headers: buildOverpassHeaders('application/x-www-form-urlencoded'),
+      body: `data=${encodeURIComponent(overpassQuery)}`,
+    }, 20000);
+
+    if (res.ok) return res;
+
+    if (res.status === 429) {
+      console.warn('[places] Overpass rate-limited (429), skipping');
+    } else {
+      const bodyText = await res.text();
+      console.warn(`[places] Overpass returned ${res.status}`);
+      console.warn(bodyText.slice(0, 200));
+    }
+  } catch (innerErr) {
+    console.warn('[places] Overpass request failed:', innerErr);
+  }
+
+  return null;
+}
+
+async function fetchPhotonResults(
+  textQuery: string,
+  effectiveLocation: LatLng,
+  limit: number,
+  osmTags?: string[]
 ): Promise<PlaceDoctor[]> {
-  const overpassQuery = buildOverpassQuery(query, userLocation, radiusMeters);
+  const url = new URL(PHOTON_API_URL);
+  url.searchParams.set('q', textQuery);
+  url.searchParams.set('limit', String(limit));
+  url.searchParams.set('lat', String(effectiveLocation.latitude));
+  url.searchParams.set('lon', String(effectiveLocation.longitude));
+  url.searchParams.set('bbox', '25.0,22.0,37.0,32.0');
+
+  if (osmTags) {
+    for (const tag of osmTags) {
+      url.searchParams.append('osm_tag', tag);
+    }
+  }
 
   try {
-    const res = await fetch(OVERPASS_API_URL, {
-      method: 'POST',
+    const res = await fetchWithTimeout(url.toString(), {
+      method: 'GET',
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Accept': 'application/json',
+        Accept: 'application/json',
+        'User-Agent': USER_AGENT,
       },
-      body: new URLSearchParams({ data: overpassQuery }).toString(),
-    });
+    }, 10000);
 
     if (!res.ok) {
-      const errText = await res.text();
-      console.error('[places] Overpass API error:', res.status, errText.slice(0, 300));
+      console.warn(`[places] Photon failed with ${res.status}`);
       return [];
     }
 
     const data = await res.json();
-    const elements: any[] = data.elements || [];
+    const results: Array<PlaceDoctor | null> = (data.features || []).map((item: any) => {
+      const lat = Number(item.geometry?.coordinates?.[1]);
+      const lon = Number(item.geometry?.coordinates?.[0]);
+      if (!lat || !lon) return null;
 
-    const results: PlaceDoctor[] = [];
+      const country = (item.properties?.country || '').toLowerCase();
+      if (country && country !== 'egypt' && country !== 'مصر' && country !== 'eg') {
+        return null;
+      }
 
-    for (const el of elements) {
-      const tags = el.tags || {};
-      const name = tags.name || tags['name:en'] || '';
+      const distance = calculateDistanceKm(effectiveLocation.latitude, effectiveLocation.longitude, lat, lon);
 
-      // Skip unnamed entries
-      if (!name || name.trim().length < 2) continue;
+      const props = item.properties || {};
+      const street = [props.street, props.housenumber].filter(Boolean).join(' ');
+      const city = props.city || props.county || props.state || '';
+      const addressCountry = props.country || '';
 
-      // Get coordinates: nodes have lat/lon directly; ways/relations have center
-      const lat = el.lat ?? el.center?.lat;
-      const lon = el.lon ?? el.center?.lon;
-      if (lat == null || lon == null) continue;
-
-      const distance = userLocation
-        ? calculateDistanceKm(userLocation.latitude, userLocation.longitude, lat, lon)
-        : undefined;
-
-      results.push({
-        placeId: String(el.id),
-        full_name: name,
-        major_field: mapOsmAmenity(tags.amenity),
-        sub_specialty: inferSubSpecialty(tags, query),
-        clinic_address: buildAddress(tags),
+      return {
+        placeId: `${props.osm_id}_${props.osm_type}`,
+        full_name: props.name || props.street || textQuery,
+        major_field: inferMajorFieldFromQuery(textQuery),
+        sub_specialty: inferSubSpecialty((item.properties || {}) as Record<string, string>, textQuery),
+        clinic_address: [street, city, addressCountry].filter(Boolean).join(', ') || 'Address not available',
         latitude: lat,
         longitude: lon,
         google_rating: 0,
@@ -209,17 +287,99 @@ export async function searchGooglePlaces(
         distance_km: distance,
         isExternal: true,
         isOnMedCare: false,
-      });
-    }
+      };
+    });
 
-    // Sort by distance if we have location, otherwise keep OSM order
-    if (userLocation) {
-      results.sort((a, b) => (a.distance_km ?? 999) - (b.distance_km ?? 999));
-    }
-
-    return results;
+    return results.filter((entry): entry is PlaceDoctor => entry !== null);
   } catch (err) {
-    console.error('[places] Failed to fetch Overpass data:', err);
+    console.warn('[places] fetchPhotonResults failed:', err);
     return [];
   }
+}
+
+const MEDICAL_OSM_TAGS = [
+  'amenity=doctor',
+  'amenity=hospital',
+  'amenity=clinic',
+  'amenity=dentist',
+  'amenity=physiotherapist',
+  'amenity=doctors',
+];
+
+async function searchPhotonPlaces(query: string, userLocation?: LatLng, limit = 30): Promise<PlaceDoctor[]> {
+  const textQuery = query.trim() || 'doctor';
+  const effectiveLocation = userLocation ?? DEFAULT_EGYPT_LOCATION;
+
+  let results = await fetchPhotonResults(textQuery, effectiveLocation, limit);
+
+  // If specialty/name query found nothing, retry with generic "doctor" + medical tags
+  // This ensures real medical POIs are found even when no place matches the exact query name
+  if (results.length === 0 && textQuery !== 'doctor') {
+    console.log('[places] Photon returned nothing for specific query, retrying with generic "doctor"');
+    results = await fetchPhotonResults('doctor', effectiveLocation, limit, MEDICAL_OSM_TAGS);
+  }
+
+  return results.slice(0, limit);
+}
+
+function parseOverpassElements(data: any, query: string, userLocation?: LatLng): PlaceDoctor[] {
+  const elements: any[] = data.elements || [];
+  const results: PlaceDoctor[] = [];
+
+  for (const el of elements) {
+    const tags = el.tags || {};
+    const name = tags.name || tags['name:en'] || '';
+
+    if (!name || name.trim().length < 2) continue;
+
+    const lat = el.lat ?? el.center?.lat;
+    const lon = el.lon ?? el.center?.lon;
+    if (lat == null || lon == null) continue;
+
+    const distance = userLocation
+      ? calculateDistanceKm(userLocation.latitude, userLocation.longitude, lat, lon)
+      : undefined;
+
+    results.push({
+      placeId: String(el.id),
+      full_name: name,
+      major_field: mapOsmAmenity(tags.amenity),
+      sub_specialty: inferSubSpecialty(tags, query),
+      clinic_address: buildAddress(tags),
+      latitude: lat,
+      longitude: lon,
+      google_rating: 0,
+      review_count: 0,
+      distance_km: distance,
+      isExternal: true,
+      isOnMedCare: false,
+    });
+  }
+
+  return results;
+}
+
+export async function searchGooglePlaces(
+  query: string,
+  userLocation?: LatLng,
+  radiusMeters = 15000
+): Promise<PlaceDoctor[]> {
+  const effectiveLocation = userLocation ?? DEFAULT_EGYPT_LOCATION;
+  const overpassQuery = buildOverpassQuery(query, userLocation, radiusMeters);
+
+  const res = await fetchOverpassResponse(OVERPASS_API_URL, overpassQuery);
+  if (res) {
+    try {
+      const data = await res.json();
+      const results = parseOverpassElements(data, query, effectiveLocation);
+
+      results.sort((a, b) => (a.distance_km ?? 999) - (b.distance_km ?? 999));
+
+      if (results.length > 0) return results;
+    } catch (parseErr) {
+      console.warn('[places] Failed to parse Overpass response:', parseErr);
+    }
+  }
+
+  return await searchPhotonPlaces(query, effectiveLocation, 30);
 }
