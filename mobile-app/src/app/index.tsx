@@ -140,18 +140,8 @@ export default function HomeScreen() {
                 </View>
               </View>
 
-              {/* MedCare AI Assistant */}
-              <View style={{ backgroundColor: 'white', borderWidth: 3, borderColor: 'black', borderRadius: 16, alignItems: 'center', position: 'relative', overflow: 'hidden', paddingTop: 20, paddingBottom: 12, marginBottom: 12 }}>
-                <View style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 14, backgroundColor: '#ccff00', borderBottomWidth: 2, borderBottomColor: 'black' }} />
-                <View style={{ width: 52, height: 52, borderRadius: 26, borderWidth: 2, borderColor: 'black', overflow: 'hidden', backgroundColor: '#ff00ff', alignItems: 'center', justifyContent: 'center' }}>
-                  <Text style={{ fontSize: 24 }}>⚕️</Text>
-                </View>
-                <Text style={{ fontWeight: 'bold', fontSize: 12, color: 'black', marginTop: 6 }}>MedCare</Text>
-                <Text style={{ fontSize: 9, color: '#6b7280', fontWeight: '500', textTransform: 'uppercase' }}>AI Assistant</Text>
-              </View>
-
               {/* Annual Checkup CTA */}
-              <View style={{ backgroundColor: '#ccff00', borderWidth: 3, borderColor: 'black', borderRadius: 16, padding: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+              <View style={{ backgroundColor: '#ccff00', borderWidth: 3, borderColor: 'black', borderRadius: 16, padding: 16, minHeight: 98, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                 <View style={{ flex: 1, paddingRight: 8 }}>
                   <Text style={{ fontSize: 18, fontWeight: '900', color: 'black', lineHeight: 20, textTransform: 'uppercase' }}>Annual{'\n'}Checkup</Text>
                   <Text style={{ fontSize: 10, color: 'black', fontWeight: '500', lineHeight: 14, marginTop: 4 }}>Don't wait. Secure your{'\n'}health baseline today.</Text>
